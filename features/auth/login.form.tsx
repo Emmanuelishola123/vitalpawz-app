@@ -32,14 +32,14 @@ export default function LoginForm({ setLoginFormState }: ILoginFormProps) {
   const setAuth = useAuthService();
   const [_mail, _setMail] = useState('');
 
-  const { methods, submitHandler, isLoading } = useReactForm<{ user_exist: boolean }, ILoginRequest>(
+  const { methods, submitHandler, isLoading } = useReactForm<{ user_exist: boolean; user: any }, ILoginRequest>(
     'post',
     `/auth/check`,
     formSchema,
     undefined,
     {
-      onSuccess: ({ user_exist }) => {
-        setLoginFormState({ email: methods.getValues('email'), exists: user_exist });
+      onSuccess: ({ user_exist, user }) => {
+        setLoginFormState({ email: methods.getValues('email'), exists: user_exist, first_name: user.first_name });
       },
     }
   );

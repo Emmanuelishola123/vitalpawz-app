@@ -8,12 +8,14 @@ import RegisterForm from 'features/auth/register.form';
 
 export type IAuthFormData = {
   email: string;
+  first_name: string;
   exists: boolean;
 };
 
 const Login: NextPageWithLayout = () => {
   const [loginFormState, setLoginFormState] = useState<IAuthFormData>({
     exists: false,
+    first_name: '',
     email: '',
   });
 
@@ -23,7 +25,7 @@ const Login: NextPageWithLayout = () => {
       {loginFormState.email && (
         <>
           {loginFormState.exists ? (
-            <LoginPasswordForm email={loginFormState.email} />
+            <LoginPasswordForm email={loginFormState.email} first_name={loginFormState.first_name} />
           ) : (
             <RegisterForm email={loginFormState.email} />
           )}

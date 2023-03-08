@@ -16,10 +16,13 @@ import { useEffect, useState, StrictMode } from 'react';
 import LoadingState from 'components/LoadingState';
 import { RecoilRoot } from 'recoil';
 import { isLocal } from '@/bootstrap/app.config';
+import { AppContext } from 'next/app';
+import { parse } from 'cookie';
 
 const EmptyLayout: ILayout = ({ children }) => children;
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  console.log('pageProps ', pageProps);
   const router = useRouter();
 
   const logoutService = useLogoutService();
@@ -67,4 +70,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   );
 }
 
+MyApp.getInitialProps = async ({ Component, ctx, req }: any) => {
+  let cookie = ctx.req.headers.cookie ? JSON.parse(parse(ctx.req.headers.cookie)['auth']) : {};
+  let pageProps = { ...cookie };
+
+  return { pageProps };
+};
 export default MyApp;
