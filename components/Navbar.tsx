@@ -15,8 +15,13 @@ import { categoriesAtom } from '@/app/atom/catsAtom';
 import dynamic from 'next/dynamic';
 
 import useWindowDimensions from '@/app/hooks/useWindowDimensions';
+import { useAuthState } from '@/app/atom/auth.atom';
+import MainButton from './MainButton';
+import { useRouter } from 'next/router';
 
 export default function Navbar() {
+  const [_authState, setAuthState] = useAuthState();
+  const { push } = useRouter();
   const { width } = useWindowDimensions();
   const [visibility, setVisibility] = useState(false);
   const siteConfig = useRecoilValue(getSiteConfig);
@@ -91,7 +96,7 @@ export default function Navbar() {
               onMouseLeave={changeVisibleMegaDropDown(false)}
               className={styles.megaLink}
             >
-              <a href="">Shop</a>
+              <Link href="/product-list">Shop</Link>
               {categories && megaDropDownVisible && <MegaDropDown categories={categories} />}
             </li>
 
@@ -110,23 +115,27 @@ export default function Navbar() {
                 <a>About us</a>
               </Link>
             </li>
-            <li>
-              <Link href="/account/edit">
-                <a>Profile</a>
-              </Link>
-            </li>
+            {_authState ? (
+              <li>
+                <Link href="/account/edit">
+                  <a>Profile</a>
+                </Link>
+              </li>
+            ) : null}
           </ul>
           <div className="flex flex-col mt-5 xl:flex-row lg:mt-0 lg:items-center">
-            <div
-              onMouseEnter={changeVisibleRewards(true)}
-              onMouseLeave={changeVisibleRewards(false)}
-              className="relative mb-16 text-center lg:mb-0 lg:px-8"
-            >
-              <Link href="/account/my-rewards">
-                <a className={styles.rewards}>Rewards</a>
-              </Link>
-              {rewardsVisible && <RewardsPopup balance="20" />}
-            </div>
+            {_authState ? (
+              <div
+                onMouseEnter={changeVisibleRewards(true)}
+                onMouseLeave={changeVisibleRewards(false)}
+                className="relative mb-16 text-center lg:mb-0 lg:px-8"
+              >
+                <Link href="/account/my-rewards">
+                  <a className={styles.rewards}>Rewards</a>
+                </Link>
+                {rewardsVisible && <RewardsPopup balance="20" />}
+              </div>
+            ) : null}
             {!!siteConfig.contactNumbers && (
               <div className="pb-12 text-center lg:pb-0 lg:px-8">
                 <a href="" className={styles.call}>
@@ -141,9 +150,12 @@ export default function Navbar() {
             <Image alt="cartButton" src={cartIcon} className="align-middle" width={24} height={24} />
           </a>
         </Link>
-
         <div className="hidden xl:flex xl:order-4 xl:items-center xl:ml-6">
-          <span className={styles.avatar}>EC</span>
+          {_authState ? (
+            <span className={styles.avatar}>{_authState.user.first_name.charAt(0)}</span>
+          ) : (
+            <MainButton onClick={() => push('/login')}>Login</MainButton>
+          )}
         </div>
       </div>
     </nav>

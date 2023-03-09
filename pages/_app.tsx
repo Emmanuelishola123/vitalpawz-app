@@ -71,8 +71,13 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 }
 
 MyApp.getInitialProps = async ({ Component, ctx, req }: any) => {
-  let cookie = ctx.req.headers.cookie ? JSON.parse(parse(ctx.req.headers.cookie)['auth']) : {};
-  let pageProps = { ...cookie };
+  let pageProps = {};
+  if (ctx.req?.headers?.cookie) {
+    if (parse(ctx.req?.headers?.cookie)['auth']) {
+      let cookie = JSON.parse(parse(ctx.req.headers.cookie)['auth']);
+      pageProps = { ...cookie };
+    }
+  }
 
   return { pageProps };
 };

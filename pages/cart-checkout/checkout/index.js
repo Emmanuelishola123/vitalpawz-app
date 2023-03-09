@@ -21,7 +21,7 @@ const CartInfo = ({ data }) => {
           data-quantity={data?.quantity ?? 1}
           className={`${styles.width20} ${styles.order_img} ${styles.sm_w_100} ${styles.sm_text_center} flex-0`}
         >
-          <Image src={data?.product?.cover} alt="arrow down" width={88} height={88} />
+          <img src={data?.product?.cover} alt="arrow down" width={88} height={88} />
         </div>
         <div className={`${styles.width50} ${styles.sm_w_100} ${styles.sm_text_center} flex-0`}>
           <h4 className={`${styles.order_title}`}>{data?.product?.title}</h4>

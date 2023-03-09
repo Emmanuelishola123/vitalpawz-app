@@ -11,9 +11,9 @@ export function getUserForCookie(user: IUserSchema): IAuthCookie['user'] | null 
 }
 
 export async function setTokenInCookie(token: string, user: IUserSchema): Promise<boolean> {
-  if (!token || !user?.id) {
-    return false;
-  }
+  // if (!token || !user?.id) {
+  //   return false;
+  // }
   return postRequest(
     `/cookie-api`,
     {

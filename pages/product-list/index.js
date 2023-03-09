@@ -17,6 +17,7 @@ import MyPagination from '@/components/MyPagination/MyPagination';
 import MySelect from '@/components/CartItems/componentsCartItem/MySelect';
 import MySelectModal from '@/components/CartItems/componentsCartItem/MySelectModal';
 import useWindowDimensions from 'app/hooks/useWindowDimensions.tsx';
+import { getRequest } from 'requests/api';
 
 const DEFAULT_ITEMS_PER_PAGE = 12;
 
@@ -492,18 +493,27 @@ const ProductList = () => {
   };
   const [currentItems, setCurrentItems] = useState([]);
   const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [itemOffset, setItemOffset] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const topOfProductsRef = useRef(null);
-
+  const getProducts = async (page) => {
+    const productsResponse = await getRequest('/products?page=' + (currentPage + 1));
+    console.log('fileterdpr ', productsResponse, pageCount);
+    if (productsResponse) {
+      setCurrentItems(productsResponse.data);
+      setPageCount(Math.ceil(productsResponse.meta.pagination.total / productsResponse.meta.pagination.count));
+      //setCurrentPage(productsResponse.meta.pagination.current_page);
+    }
+  };
   useEffect(() => {
-    const countFeaturedItems = items?.slice(itemOffset, endOffset).filter((obj) => obj.type === 'Featured').length;
-    setItemsPerPage(DEFAULT_ITEMS_PER_PAGE - countFeaturedItems);
-
-    const endOffset = itemOffset + itemsPerPage;
-    setCurrentItems(items.slice(itemOffset, endOffset));
-    setPageCount(Math.ceil(items.length / itemsPerPage));
-  }, [itemOffset, itemsPerPage, items]);
+    getProducts();
+    // const countFeaturedItems = items?.slice(itemOffset, endOffset).filter((obj) => obj.type === 'Featured').length;
+    // setItemsPerPage(DEFAULT_ITEMS_PER_PAGE - countFeaturedItems);
+    // const endOffset = itemOffset + itemsPerPage;
+    // setCurrentItems(items.slice(itemOffset, endOffset));
+    // setPageCount(Math.ceil(items.length / itemsPerPage));
+  }, [itemOffset]);
 
   const scrollToTopPaginate = () => {
     topOfProductsRef.current.scrollIntoView({
@@ -598,6 +608,7 @@ const ProductList = () => {
                 setItemOffset={setItemOffset}
                 itemsPerPage={itemsPerPage}
                 scrollToTop={scrollToTopPaginate}
+                setItemPageNumber={setCurrentPage}
               />
             </div>
           </div>
