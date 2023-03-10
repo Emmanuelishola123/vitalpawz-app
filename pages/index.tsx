@@ -30,8 +30,6 @@ const bugherdUrl = 'https://www.bugherd.com/sidebarv2.js?apikey=' + getEnv('bugh
 const HomePage: NextPageWithLayout = () => {
   // All Request Data
   const response: any = getRequestSwr<IHomePageResponse>('/home');
-  const catsResponse = getRequestSwr<IHomePageResponse>('/categories');
-  const categories: any = catsResponse || null;
   const productsResponse = getRequestSwr<IHomePageResponse>('/products');
   const products: any = productsResponse || [];
   const recent_blogs = response?.recent_blogs;
@@ -42,7 +40,6 @@ const HomePage: NextPageWithLayout = () => {
 
   // Setting Recoil Values
   const { width } = useWindowDimensions();
-  const [, setCategoriesToAtom] = useRecoilState(categoriesAtom);
   const [, setProductsToAtom] = useRecoilState(smartSearchProductsAtom);
   const [, setBrandsToAtom] = useRecoilState(smartSearchBrandsAtom);
   const [smartSearchState, setSmartSearchState] = useRecoilState(smartSearchAtomState);
@@ -51,9 +48,6 @@ const HomePage: NextPageWithLayout = () => {
     setSmartSearchState(false);
   };
 
-  useEffect(() => {
-    setCategoriesToAtom(categories?.categories);
-  }, [categories]);
   useEffect(() => {
     setProductsToAtom(products?.data);
   }, [products]);

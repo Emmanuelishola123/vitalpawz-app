@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import MainLayout from 'layouts/MainLayout';
-import ShopByConcern from '../../components/ShopByConcern';
+import ShopByConcern from '../../../components/ShopByConcern';
 import Breadcrumbs from 'nextjs-breadcrumbs';
 import { Level } from 'shared/GameData';
 import Image from 'next/image';
 import sort from '@/public/img/logo/group-17.svg';
-import Filter from './components/Filter';
-import SlideOver from './components/SlideOver';
+import Filter from '../components/Filter';
+import SlideOver from '../components/SlideOver';
 import Product from '@/components/Product';
 import ProductFeatured from '@/components/ProductFeatured';
 import Banner from '@/components/Banner';
@@ -18,11 +18,12 @@ import MySelect from '@/components/CartItems/componentsCartItem/MySelect';
 import MySelectModal from '@/components/CartItems/componentsCartItem/MySelectModal';
 import useWindowDimensions from 'app/hooks/useWindowDimensions.tsx';
 import { getRequest } from 'requests/api';
+import { useRouter } from 'next/router';
 import styles from 'styles/TopSellingProducts.module.scss';
 
 const DEFAULT_ITEMS_PER_PAGE = 12;
 
-const ProductList = () => {
+const CategoryProductList = () => {
   const [title, setTitle] = useState('Vitamins & Supplements');
   const [modalActive, setModalActive] = useState(false);
   const [sortItem, setSortItem] = useState('Popularity');
@@ -485,6 +486,8 @@ const ProductList = () => {
         'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
     },
   ]);
+  const router = useRouter();
+
   const setModalActiveSelect = () => {
     setModalActive(true);
   };
@@ -499,7 +502,7 @@ const ProductList = () => {
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const topOfProductsRef = useRef(null);
   const getProducts = async (page) => {
-    const productsResponse = await getRequest('/products?page=' + (currentPage + 1));
+    const productsResponse = await getRequest(`/products?page=${currentPage + 1}&categories[]=${router.query.slug}`);
     console.log('fileterdpr ', productsResponse, pageCount);
     if (productsResponse) {
       setCurrentItems(productsResponse.data);
@@ -582,6 +585,11 @@ const ProductList = () => {
           <div className={style.filter}>
             <Filter />
           </div>
+          {currentItems
+            ? !currentItems.length && (
+                <h1 style={{ textAlign: 'center', width: '100%', fontSize: '36px' }}>Not Found</h1>
+              )
+            : null}
           <div className={style.products}>
             <div className={style.productWrapper}>
               {currentItems
@@ -660,8 +668,8 @@ const SkeletonCard = (props) => {
   );
 };
 
-ProductList.Layout = MainLayout;
+CategoryProductList.Layout = MainLayout;
 
-export const getServerSideProps = createGetServerSidePropsFn(ProductList);
+export const getServerSideProps = createGetServerSidePropsFn(CategoryProductList);
 
-export default ProductList;
+export default CategoryProductList;
