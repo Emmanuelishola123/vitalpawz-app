@@ -4,7 +4,8 @@
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": [
-    "webp"
-  ]
+  "cSpell.words": ["webp"],
+  "[php]": {
+    "editor.defaultFormatter": "DEVSENSE.phptools-vscode"
+  }
 }
