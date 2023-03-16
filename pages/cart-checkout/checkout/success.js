@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import styles from 'styles/cart-checkout/checkout/success/style.module.scss';
 import sheldImg from '@/public/img/logo/icon-40-shield.svg';
@@ -8,8 +8,18 @@ import MainLayout from 'layouts/MainLayout';
 import createGetServerSidePropsFn from 'shared/createGetServerSidePropsFn';
 import crown from 'public/img/cart-checkout/crown.svg';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const Checkout = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.query) return router.push('/');
+    if (!router.query.data) return router.push('/');
+
+    const data = JSON.parse(decodeURIComponent(router.query.data));
+  }, []);
+  console.log(JSON.parse(decodeURIComponent(router.query.data)));
   return (
     <div className={styles.mainBody}>
       <div className={styles.wrapper}>
@@ -29,7 +39,9 @@ const Checkout = () => {
                         We’ll email you an order confirmation with the details and tracking info.
                       </p>
                       <div className={`mt-[24px]`}>
-                        <button className={`${styles.ContinueButton}`}>Continue shopping</button>
+                        <button onClick={() => router.push('/')} className={`${styles.ContinueButton}`}>
+                          Continue shopping
+                        </button>
                       </div>
                     </div>
                   </div>

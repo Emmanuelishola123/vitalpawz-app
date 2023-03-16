@@ -17,8 +17,8 @@ import { Label } from 'components/InputLabel';
 import MySelect from '@/components/CartItems/componentsCartItem/MySelect';
 import countryList from '../../../shared/countryList';
 import { toast } from 'react-toastify';
-import { postRequest } from 'requests/api';
-import { useRouter } from 'next/router';
+import { postRequest, getRequest } from 'requests/api';
+import Router, { useRouter } from 'next/router';
 
 const CartInfo = ({ data }) => {
   return (
@@ -155,11 +155,19 @@ const Checkout = () => {
   };
   const [cart, setCart] = useCartState();
   const verifyOrder = async (id) => {
-    console.log(id);
+    const res = await postRequest('/orders/pay/success?session_id=' + id, JSON.stringify([]));
+    if (res.status) {
+      toast.success(res.message);
+      router.push({ pathname: '/cart-checkout/checkout/success', query: { data: JSON.stringify(res.data.order) } });
+    } else {
+      router.push({ pathname: '/' });
+    }
+    console.log(res);
     setCart([]);
   };
 
   useEffect(() => {
+    //  var session_id = 'cs_test_a102NsZusXqllvL85x0NW98cAJUKjxQrQAIn0Wn0lI0IWW9wWQ6rU1vZjD';
     if (session_id) {
       verifyOrder(session_id);
     }
