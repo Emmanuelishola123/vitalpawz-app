@@ -221,6 +221,7 @@ const CookieDecliceButton = ({ buttonSize = 25 }) => {
   return <MdClose color="#4a2072" size={buttonSize} />;
 };
 
+
 HomePage.Layout = MainLayout;
 
 export const getServerSideProps = createGetServerSidePropsFn(HomePage);

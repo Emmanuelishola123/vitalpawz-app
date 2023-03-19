@@ -16,9 +16,12 @@ import createGetServerSidePropsFn from 'shared/createGetServerSidePropsFn';
 import MyPagination from '@/components/MyPagination/MyPagination';
 import MySelect from '@/components/CartItems/componentsCartItem/MySelect';
 import MySelectModal from '@/components/CartItems/componentsCartItem/MySelectModal';
-import useWindowDimensions from 'app/hooks/useWindowDimensions.tsx';
+import useWindowDimensions from 'app/hooks/useWindowDimensions';
+import { retrieveAllProduct, ProductsType } from '../../shared/services/productApis';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { productDataType } from '../../app/types/product.types';
 
-const DEFAULT_ITEMS_PER_PAGE = 12;
+const DEFAULT_ITEMS_PER_PAGE = 10;
 
 const ProductList = () => {
   const [title, setTitle] = useState('Vitamins & Supplements');
@@ -26,463 +29,476 @@ const ProductList = () => {
   const [sortItem, setSortItem] = useState('Popularity');
   const { width } = useWindowDimensions();
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState([
-    {
-      img: '/img/HomePage/item2.png',
-      title: '1Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'Featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item3.png',
-      title:
-        'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'new',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item1.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.53',
-      type: 'Featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
+  // const [items, setItems ] = useState([
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: '1Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'Featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title:
+  //       'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'new',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item1.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.53',
+  //     type: 'Featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
 
-    {
-      img: '/img/HomePage/item3.png',
-      title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item3.png',
-      title:
-        'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item1.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.53',
-      type: 'new',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title:
+  //       'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item1.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.53',
+  //     type: 'new',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
 
-    {
-      img: '/img/HomePage/item3.png',
-      title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item3.png',
-      title:
-        'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item1.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.53',
-      type: 'new',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title:
+  //       'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item1.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.53',
+  //     type: 'new',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
 
-    {
-      img: '/img/HomePage/item3.png',
-      title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item3.png',
-      title:
-        'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item1.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.53',
-      type: 'new',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title:
+  //       'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item1.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.53',
+  //     type: 'new',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
 
-    {
-      img: '/img/HomePage/item3.png',
-      title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item3.png',
-      title:
-        'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item1.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.53',
-      type: 'new',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title:
+  //       'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item1.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.53',
+  //     type: 'new',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
 
-    {
-      img: '/img/HomePage/item3.png',
-      title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item3.png',
-      title:
-        'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item1.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.53',
-      type: 'new',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title:
+  //       'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item1.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.53',
+  //     type: 'new',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
 
-    {
-      img: '/img/HomePage/item3.png',
-      title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item3.png',
-      title:
-        'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item1.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.53',
-      type: 'new',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title:
+  //       'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews CBD Wellness Chicken And Blueberry Flavor Soft Baked ChewsCBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item1.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.53',
+  //     type: 'new',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
 
-    {
-      img: '/img/HomePage/item3.png',
-      title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '25.56',
-      type: '',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item4.png',
-      title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '23.25',
-      type: 'popular',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-    {
-      img: '/img/HomePage/item2.png',
-      title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
-      text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
-      price: '24.34',
-      type: 'featured',
-      description:
-        'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
-    },
-  ]);
+  //   {
+  //     img: '/img/HomePage/item3.png',
+  //     title: 'CBD Wellness Chicken And Blueberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '25.56',
+  //     type: '',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item4.png',
+  //     title: ' Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '23.25',
+  //     type: 'popular',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  //   {
+  //     img: '/img/HomePage/item2.png',
+  //     title: 'Martha Stewart CBD Calm Chicken and Cranberry Flavor Soft Baked Chews',
+  //     text: 'Small/Medium (5-35 lbs), 9 mg, 30 Soft Baked Chews',
+  //     price: '24.34',
+  //     type: 'featured',
+  //     description:
+  //       'From the industry leader in CBD science for pets – Recommended to support joint health and flexibility in dogs. The highest-quality CBD from broad spectrum hemp extract blended with Boswellia serrata in a smoky bacon-flavored soft chew.',
+  //   },
+  // ]);
+
+  const {
+    data: items,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['productLists'],
+    queryFn: retrieveAllProduct,
+  });
+
+  //  const items = data.data.data
+  //  const meta = data.data.meta
+
   const setModalActiveSelect = () => {
     setModalActive(true);
   };
@@ -496,14 +512,14 @@ const ProductList = () => {
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const topOfProductsRef = useRef(null);
 
-  useEffect(() => {
-    const countFeaturedItems = items?.slice(itemOffset, endOffset).filter((obj) => obj.type === 'Featured').length;
-    setItemsPerPage(DEFAULT_ITEMS_PER_PAGE - countFeaturedItems);
+  // useEffect(() => {
+  //   const countFeaturedItems = items?.slice(itemOffset, endOffset).filter((obj) => obj.type === 'Featured').length;
+  //   setItemsPerPage(DEFAULT_ITEMS_PER_PAGE - countFeaturedItems);
 
-    const endOffset = itemOffset + itemsPerPage;
-    setCurrentItems(items.slice(itemOffset, endOffset));
-    setPageCount(Math.ceil(items.length / itemsPerPage));
-  }, [itemOffset, itemsPerPage, items]);
+  //   const endOffset = itemOffset + itemsPerPage;
+  //   setCurrentItems(items.slice(itemOffset, endOffset));
+  //   setPageCount(Math.ceil(items.length / itemsPerPage));
+  // }, [itemOffset, itemsPerPage, items]);
 
   const scrollToTopPaginate = () => {
     topOfProductsRef.current.scrollIntoView({
@@ -530,7 +546,9 @@ const ProductList = () => {
           <div className={style.header}>
             <div className={style.titleWrapper}>
               <div className={style.title}>{title}</div>
-              <div className={style.select}>{`Showing 1–20 of 40 products`}</div>
+              <div className={style.select}>{`Showing ${items?.data?.meta?.pagination?.current_page} - ${
+                items?.data?.meta?.pagination?.per_page * items?.data?.meta?.pagination?.current_page
+              } of ${items?.data?.meta?.pagination?.total}`}</div>
             </div>
             <div className={style.sortWrapper}>
               <div className={style.filterWrapper}>
@@ -573,7 +591,7 @@ const ProductList = () => {
           </div>
           <div className={style.products}>
             <div className={style.productWrapper}>
-              {currentItems.map((e, index) =>
+              {items?.data?.data?.map((e, index) =>
                 e.type === 'Featured' ? (
                   <div
                     key={index}
@@ -593,10 +611,10 @@ const ProductList = () => {
             </div>
             <div className={style.MyPagination}>
               <MyPagination
-                items={items}
-                pageCount={pageCount}
+                items={items?.data?.data}
+                pageCount={items?.data?.meta?.pagination?.total_pages}
                 setItemOffset={setItemOffset}
-                itemsPerPage={itemsPerPage}
+                itemsPerPage={items?.data?.meta?.pagination?.per_page}
                 scrollToTop={scrollToTopPaginate}
               />
             </div>

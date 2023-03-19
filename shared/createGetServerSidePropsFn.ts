@@ -7,7 +7,6 @@ import { IAxiosError } from 'types/request.types';
 import { IAuthCookie } from 'types/cookies.types';
 import { clearCookie } from 'shared/server/cookie.server';
 
-
 export default function createGetServerSidePropsFn<T = unknown>(
   Component: NextPageWithLayout<T>,
   getServerSideProps?: GetServerSideProps
