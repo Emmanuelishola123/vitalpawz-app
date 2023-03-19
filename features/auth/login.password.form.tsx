@@ -11,6 +11,7 @@ import { IUserSchema } from 'schemas/account.schema';
 
 type ILoginFormProps = {
   email: string;
+  first_name: string;
 };
 
 type ILoginPasswordRequest = {
@@ -23,7 +24,7 @@ const formSchema: SchemaOf<ILoginPasswordRequest> = object().shape({
   password: string().label('Password').required().min(6),
 });
 
-export default function LoginPasswordForm({ email }: ILoginFormProps) {
+export default function LoginPasswordForm({ email, first_name }: ILoginFormProps) {
   const setAuth = useAuthService();
   const { methods, submitHandler, isLoading } = useReactForm<
     IApiResponse<{ user: IUserSchema; token: string }>,
@@ -44,7 +45,7 @@ export default function LoginPasswordForm({ email }: ILoginFormProps) {
 
   return (
     <>
-      <AuthLayoutTitle>Welcome back Ryan!</AuthLayoutTitle>
+      <AuthLayoutTitle>Welcome back {first_name}!</AuthLayoutTitle>
       <FormProvider {...methods}>
         <form onSubmit={submitHandler}>
           <div className={style.wrapper}>

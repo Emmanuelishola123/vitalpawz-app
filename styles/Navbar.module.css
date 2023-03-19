@@ -75,6 +75,7 @@
 }
 
 .avatar {
+  text-transform: uppercase;
   width: 51px;
   height: 51px;
   border-radius: 25.5px;

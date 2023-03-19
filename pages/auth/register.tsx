@@ -16,7 +16,7 @@ const RegisterPage: NextPageWithLayout = () => {
       <AuthLayoutTitle>Create an Account</AuthLayoutTitle>
       <div className={style.wrapper}>
         <form className="" action="@/pages/auth/index#" method="POST">
-          {/* <p className={style.email}>{userContext.email}</p> */}
+          <p className={style.email}>{userContext.email}</p>
           <label htmlFor="username" className={style.passwordLabel}>
             Full Name
           </label>

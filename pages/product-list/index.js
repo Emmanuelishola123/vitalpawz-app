@@ -16,10 +16,16 @@ import createGetServerSidePropsFn from 'shared/createGetServerSidePropsFn';
 import MyPagination from '@/components/MyPagination/MyPagination';
 import MySelect from '@/components/CartItems/componentsCartItem/MySelect';
 import MySelectModal from '@/components/CartItems/componentsCartItem/MySelectModal';
+
 import useWindowDimensions from 'app/hooks/useWindowDimensions';
 import { retrieveAllProduct, ProductsType } from '../../shared/services/productApis';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { productDataType } from '../../app/types/product.types';
+
+
+import useWindowDimensions from 'app/hooks/useWindowDimensions.tsx';
+import { getRequest } from 'requests/api';
+import styles from 'styles/TopSellingProducts.module.scss';
+
 
 const DEFAULT_ITEMS_PER_PAGE = 10;
 
@@ -506,11 +512,13 @@ const ProductList = () => {
     setSortItem(item);
     setModalActive(false);
   };
-  const [currentItems, setCurrentItems] = useState([]);
+  const [currentItems, setCurrentItems] = useState(null);
   const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [itemOffset, setItemOffset] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const topOfProductsRef = useRef(null);
+
 
   // useEffect(() => {
   //   const countFeaturedItems = items?.slice(itemOffset, endOffset).filter((obj) => obj.type === 'Featured').length;
@@ -520,6 +528,25 @@ const ProductList = () => {
   //   setCurrentItems(items.slice(itemOffset, endOffset));
   //   setPageCount(Math.ceil(items.length / itemsPerPage));
   // }, [itemOffset, itemsPerPage, items]);
+
+  const getProducts = async (page) => {
+    const productsResponse = await getRequest('/products?page=' + (currentPage + 1));
+    console.log('fileterdpr ', productsResponse, pageCount);
+    if (productsResponse) {
+      setCurrentItems(productsResponse.data);
+      setPageCount(Math.ceil(productsResponse.meta.pagination.total / productsResponse.meta.pagination.count));
+      //setCurrentPage(productsResponse.meta.pagination.current_page);
+    }
+  };
+  useEffect(() => {
+    getProducts();
+    // const countFeaturedItems = items?.slice(itemOffset, endOffset).filter((obj) => obj.type === 'Featured').length;
+    // setItemsPerPage(DEFAULT_ITEMS_PER_PAGE - countFeaturedItems);
+    // const endOffset = itemOffset + itemsPerPage;
+    // setCurrentItems(items.slice(itemOffset, endOffset));
+    // setPageCount(Math.ceil(items.length / itemsPerPage));
+  }, [itemOffset]);
+
 
   const scrollToTopPaginate = () => {
     topOfProductsRef.current.scrollIntoView({
@@ -608,6 +635,28 @@ const ProductList = () => {
                   </div>
                 )
               )}
+
+              {currentItems
+                ? currentItems.map((e, index) =>
+                    e.type === 'Featured' ? (
+                      <div
+                        key={index}
+                        className={classNames(style.product, {
+                          [style.featured]: e.type === 'Featured',
+                        })}
+                      >
+                        <ProductFeatured item={e} classname={'hidden lg:block'} />
+                        <Product item={e} classname={'block lg:hidden'} />
+                      </div>
+                    ) : (
+                      <div key={index} className={style.product}>
+                        <Product item={e} />
+                      </div>
+                    )
+                  )
+                : Array(4)
+                    .fill(0)
+                    .map((v, i) => <SkeletonCard key={i} />)}
             </div>
             <div className={style.MyPagination}>
               <MyPagination
@@ -616,6 +665,7 @@ const ProductList = () => {
                 setItemOffset={setItemOffset}
                 itemsPerPage={items?.data?.meta?.pagination?.per_page}
                 scrollToTop={scrollToTopPaginate}
+                setItemPageNumber={setCurrentPage}
               />
             </div>
           </div>
@@ -637,6 +687,27 @@ const ProductList = () => {
           </div>
         ))}
       </MySelectModal>
+    </div>
+  );
+};
+
+const SkeletonCard = (props) => {
+  return (
+    <div className={styles.product}>
+      <div className={classNames(styles.ProductImg)}>
+        <div className="sm:w-[188px] sm:h-[196px] w-[110px] h-[110px] animate-pulse bg-gradient-to-r from-gray-400 to-gray-500"></div>
+      </div>
+      <div className={`w-[70px] h-[20px] animate-pulse rounded-md bg-gray-400 ${styles.priceMedia}`}></div>
+      <div
+        className={`sm:h-[40px] sm:w-full w-[55px] h-[25px] animate-pulse rounded-md bg-gray-300 sm:mt-[23px] mt-[8px] ${styles.title}`}
+      ></div>
+      <div
+        className={`sm:h-[70px] sm:w-full w-[130px] h-[60px] animate-pulse rounded-md bg-gray-200 mt-[10px] ${styles.productDescription}`}
+      ></div>
+      <div className={styles.PriceAndAddButton}>
+        <div className={`w-[55px] h-[25px] animate-pulse rounded-md bg-gray-400 sm:block hidden ${styles.price}`}></div>
+        <div className={`w-[136px] h-[45px] animate-pulse rounded-md bg-orange ${styles.addToCart}`}></div>
+      </div>
     </div>
   );
 };

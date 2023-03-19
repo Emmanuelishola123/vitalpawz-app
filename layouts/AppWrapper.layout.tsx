@@ -1,7 +1,7 @@
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 
 import { IUserSchema } from 'schemas/account.schema';
-import { setToken } from 'requests/api';
+import { getRequestSwr, setToken } from 'requests/api';
 import { useRouter } from 'next/router';
 import LoadingState from 'components/LoadingState';
 import { NotificationContext } from 'contexts/notification.context';
@@ -10,6 +10,9 @@ import { useAuthState } from 'app/atom/auth.atom';
 import { useSiteConfig } from 'atom/siteConfig.atom';
 import usePromise from 'hooks/usePromise';
 import { getGenericAppData } from 'requests/header.request';
+import { IHomePageResponse } from '@/app/types/responses/homePage.response';
+import { useRecoilState } from 'recoil';
+import { categoriesAtom } from '@/app/atom/catsAtom';
 
 type IProps = {
   user?: IUserSchema;
@@ -31,6 +34,9 @@ export const AppWrapper: FC<IProps> = ({
   authCheckStatus,
   setAuthCheckStatus,
 }) => {
+  const catsResponse = getRequestSwr<IHomePageResponse>('/categories');
+  const categories: any = catsResponse || null;
+  const [, setCategoriesToAtom] = useRecoilState(categoriesAtom);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [_authState, setAuthState] = useAuthState();
@@ -48,6 +54,10 @@ export const AppWrapper: FC<IProps> = ({
       response && setSiteConfig(response);
     });
   }, []);
+
+  useEffect(() => {
+    setCategoriesToAtom(categories?.categories);
+  }, [categories]);
 
   // useEffect(() => {
   //   if (!isServerRendered) {

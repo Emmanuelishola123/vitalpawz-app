@@ -7,16 +7,28 @@ import 'react-toastify/dist/ReactToastify.min.css';
 import 'react-rangeslider/lib/index.css';
 import '@/pages/add-pet/components/MyRangeSlider.scss';
 import { AppWrapper } from 'layouts/AppWrapper.layout';
+
+import { IHomePageResponse } from 'types/responses/homePage.response';
+
 import { FormContext } from 'contexts/form.context';
 import { useRouter } from 'next/router';
 import useLogoutService from 'hooks/useLogoutService';
 import { useEffect, useState, StrictMode } from 'react';
+
+import { categoriesAtom } from '@/app/atom/catsAtom';
+
 import LoadingState from 'components/LoadingState';
-import { RecoilRoot } from 'recoil';
+import { RecoilRoot, useRecoilState } from 'recoil';
 import { isLocal } from '@/bootstrap/app.config';
+
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const queryClient = new QueryClient()
+
+
+import { AppContext } from 'next/app';
+import { parse } from 'cookie';
+import { getRequestSwr } from '@/app/requests/api';
 
 
 const EmptyLayout: ILayout = ({ children }) => children;
@@ -71,4 +83,15 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   );
 }
 
+MyApp.getInitialProps = async ({ Component, ctx, req }: any) => {
+  let pageProps = {};
+  if (ctx.req?.headers?.cookie) {
+    if (parse(ctx.req?.headers?.cookie)['auth']) {
+      let cookie = JSON.parse(parse(ctx.req.headers.cookie)['auth']);
+      pageProps = { ...cookie };
+    }
+  }
+
+  return { pageProps };
+};
 export default MyApp;

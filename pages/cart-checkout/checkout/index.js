@@ -9,9 +9,16 @@ import createGetServerSidePropsFn from 'shared/createGetServerSidePropsFn';
 import Link from 'next/link';
 import PrimarySmall from 'components/Buttons/PrimarySmall';
 import { useForm } from 'react-hook-form';
-import { useCartValue, getCartTotal } from '../../../app/atom/cart.atom';
+import { useCartValue, getCartTotal, useCartState } from '../../../app/atom/cart.atom';
 import dynamic from 'next/dynamic';
 import { useRecoilValue } from 'recoil';
+import { useAuthState } from '@/app/atom/auth.atom';
+import { Label } from 'components/InputLabel';
+import MySelect from '@/components/CartItems/componentsCartItem/MySelect';
+import countryList from '../../../shared/countryList';
+import { toast } from 'react-toastify';
+import { postRequest, getRequest } from 'requests/api';
+import Router, { useRouter } from 'next/router';
 
 const CartInfo = ({ data }) => {
   return (
@@ -21,7 +28,7 @@ const CartInfo = ({ data }) => {
           data-quantity={data?.quantity ?? 1}
           className={`${styles.width20} ${styles.order_img} ${styles.sm_w_100} ${styles.sm_text_center} flex-0`}
         >
-          <Image src={data?.product?.cover} alt="arrow down" width={88} height={88} />
+          <img src={data?.product?.cover} alt="arrow down" width={88} height={88} />
         </div>
         <div className={`${styles.width50} ${styles.sm_w_100} ${styles.sm_text_center} flex-0`}>
           <h4 className={`${styles.order_title}`}>{data?.product?.title}</h4>
@@ -45,8 +52,12 @@ const CartInfoDynamic = dynamic(() => Promise.resolve(CartInfo), { ssr: false })
 const CartTotalDynamic = dynamic(() => Promise.resolve(CartTotal), { ssr: false });
 
 const Checkout = () => {
+  const router = useRouter();
+  const { session_id } = router.query;
+  const [_authState, setAuthState] = useAuthState();
   const {
     register,
+    setValue,
     handleSubmit,
     watch,
     formState: { errors },
@@ -54,36 +65,48 @@ const Checkout = () => {
 
   const cartData = useCartValue();
 
+  console.log(cartData);
+
   const onSubmit = (data) => {
-    const { address, apartment, city, fullName, zipCode } = data;
-    setDeliveryAdresses((current) => [
-      ...current,
-      { id: 2, name: fullName, address: `${apartment} ${address} ${city} ${zipCode}`, phone: '116-30-9372' },
-    ]);
+    setDeliveryAdresses((current) => [...current, data]);
     setAddNewAddress(false);
 
     // addNewAddressInputRef.current.prop('checked', false);
   };
 
+  const placeOrder = async () => {
+    if (!userData.full_name) return toast.warning('Please enter your name');
+    if (!userData.email) return toast.warning('Please enter your email');
+    if (!userData.mobile) return toast.warning('Please enter your phone number');
+    if (!selectedDeliveryAdresses) return toast.warning('Please select delivery address');
+
+    const products = [];
+    cartData.map((v) => products.push({ id: v.product.id, quantity: v.quantity, options: [v.product.id] }));
+    const data = {
+      full_name: userData.full_name,
+      email: userData.email,
+      mobile: userData.mobile,
+      payment_type: 'card',
+      products,
+      street_address: selectedDeliveryAdresses.address,
+      city: selectedDeliveryAdresses.city,
+      country: selectedDeliveryAdresses.country,
+      postal_code: selectedDeliveryAdresses.zipCode,
+      code: '',
+    };
+    const res = await postRequest('/orders/pay', JSON.stringify(data));
+    if (res.data.url) {
+      location.replace(res.data.url);
+    }
+    console.log(res);
+  };
+
   const [state, setState] = useState('payment_method_card');
   const [addBillingAddress, setAddBillingAddress] = useState(false);
   const [addNewAddress, setAddNewAddress] = useState(false);
-  const [deliveryAdresses, setDeliveryAdresses] = useState([
-    {
-      id: 1,
-      name: 'Elizabeth Collins',
-      address: '801 Trouser Leg Road, Greenfield, Massachusetts, 01301',
-      phone: '116-30-9372',
-    },
-    {
-      id: 2,
-      name: 'Elizabeth Collins',
-      address: '3335 Angus Road, New York, 10014',
-      phone: '116-30-9372',
-    },
-  ]);
-  const [selectedDeliveryAdresses, setSelectedDeliveryAdresses] = useState(1);
-
+  const [deliveryAdresses, setDeliveryAdresses] = useState([]);
+  const [selectedDeliveryAdresses, setSelectedDeliveryAdresses] = useState(null);
+  const [userData, setUserData] = useState({});
   const addNewAddressRef = useRef(null);
   const addNewBillingAddressRef = useRef(null);
 
@@ -130,6 +153,25 @@ const Checkout = () => {
       setState('amazonpay_none');
     } else setState('payment_method_amazonpay');
   };
+  const [cart, setCart] = useCartState();
+  const verifyOrder = async (id) => {
+    const res = await postRequest('/orders/pay/success?session_id=' + id, JSON.stringify([]));
+    if (res.status) {
+      toast.success(res.message);
+      router.push({ pathname: '/cart-checkout/checkout/success', query: { data: JSON.stringify(res.data.order) } });
+    } else {
+      router.push({ pathname: '/' });
+    }
+    console.log(res);
+    setCart([]);
+  };
+
+  useEffect(() => {
+    //  var session_id = 'cs_test_a102NsZusXqllvL85x0NW98cAJUKjxQrQAIn0Wn0lI0IWW9wWQ6rU1vZjD';
+    if (session_id) {
+      verifyOrder(session_id);
+    }
+  }, []);
 
   return (
     <div className={styles.mainBody}>
@@ -166,6 +208,7 @@ const Checkout = () => {
                             placeholder="First & Last Name"
                             required
                             className={styles.formInput}
+                            onChange={(e) => setUserData({ ...userData, full_name: e.target.value })}
                           />
                         </div>
                       </div>
@@ -186,6 +229,7 @@ const Checkout = () => {
                             // }}
                             required
                             className={styles.formInput}
+                            onChange={(e) => setUserData({ ...userData, mobile: e.target.value })}
                             // formNoValidate={username === ''}
                           />
                         </div>
@@ -207,6 +251,7 @@ const Checkout = () => {
                             // }}
                             required
                             className={styles.formInput}
+                            onChange={(e) => setUserData({ ...userData, email: e.target.value })}
                             // formNoValidate={username === ''}
                           />
                         </div>
@@ -236,7 +281,7 @@ const Checkout = () => {
                       Delivery Address
                     </h4>
                     <div>
-                      <div className={`${styles.width100} ${styles.checkoutCheckbox}`}>
+                      {/* <div className={`${styles.width100} ${styles.checkoutCheckbox}`}>
                         <label
                           id="checkAddBillingAddress"
                           className={`${styles.flexRow} ${styles.flexNoWrap} ${styles.alignCenter} ${styles.justifyStart} `}
@@ -250,24 +295,27 @@ const Checkout = () => {
                           />
                           <p className={`text-sm text-medium_black cursor-pointer`}>I want to add billing address.</p>
                         </label>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 
                   <div
                     className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24} ${styles.deliveryAddressBox}`}
                   >
-                    {deliveryAdresses.map((address) => (
+                    {deliveryAdresses.map((address, index) => (
                       <div className={`${styles.deliveryAddressItem}`}>
                         <label>
-                          <input type="checkbox" className={`cursor-pointer`} />
+                          <input
+                            type="radio"
+                            name="selected_adderess"
+                            onChange={(e) => setSelectedDeliveryAdresses(address)}
+                            className={`cursor-pointer`}
+                          />
                           <p>
-                            {address.name} <br />
-                            {address.address} <br />
-                            {address.phone}
+                            {address.address} {address.city} {address.country}, {address.zipCode}
                           </p>
                         </label>
-                        <Link href={`/`}>Edit</Link>
+                        {/* <Link href={`/`}>Edit</Link> */}
                       </div>
                     ))}
 
@@ -307,23 +355,7 @@ const Checkout = () => {
                             />
                           </div>
                         </div>
-                        <div className={`${styles.width100} ${styles.mt_24}`}>
-                          <label htmlFor="apartment" className={styles.formLabel}>
-                            Apartment, suite, etc.(optional)
-                          </label>
-                          <div>
-                            <input
-                              id="text"
-                              name="apartment"
-                              type="text"
-                              autoComplete="apartment"
-                              placeholder="Apartment, suite, etc.(optional)"
-                              required
-                              className={styles.formInput}
-                              {...register('apartment')}
-                            />
-                          </div>
-                        </div>
+
                         <div className={`${styles.width100} ${styles.mt_24}`}>
                           <label htmlFor="city" className={styles.formLabel}>
                             City / Suburb
@@ -344,27 +376,13 @@ const Checkout = () => {
                         <div
                           className={`${styles.pr_12} ${styles.width50} ${styles.mt_24} ${styles.checkoutSelect} ${styles.sm_w_100}`}
                         >
-                          <label htmlFor="username" className={styles.formLabel}>
-                            Full Name
-                          </label>
-                          <div>
-                            <input
-                              id="text"
-                              name="fullName"
-                              type="text"
-                              autoComplete="fullName"
-                              placeholder="Full Name"
-                              required
-                              className={styles.formInput}
-                              {...register('fullName')}
-                            />
-                            {/* <select name="cars" id="cars">
-                                <option value="volvo">Volvo</option>
-                                <option value="saab">Saab</option>
-                                <option value="mercedes">Mercedes</option>
-                                <option value="audi">Audi</option>
-                              </select> */}
-                          </div>
+                          <Label label="Country" />
+                          <MySelect
+                            setState={(v) => setValue('country', v.value)}
+                            optionsArr={countryList}
+                            placeholder={'Select country'}
+                            classNamePrefix={'mySelect2'}
+                          />
                         </div>
                         <div className={`${styles.width50} ${styles.mt_24} ${styles.sm_w_100}`}>
                           <label htmlFor="zipCode" className={styles.formLabel}>
@@ -681,7 +699,11 @@ const Checkout = () => {
                       <div
                         className={`${styles.width50} ${styles.text_right} ${styles.md_w_100} ${styles.md_text_left} ${styles.sm_text_center}`}
                       >
-                        <button className={`${styles.ContinueButton} ${styles.md_mt_12} ${styles.sm_text_center}`}>
+                        <button
+                          type="button"
+                          onClick={placeOrder}
+                          className={`${styles.ContinueButton} ${styles.md_mt_12} ${styles.sm_text_center}`}
+                        >
                           Pay & Continue
                         </button>
                       </div>

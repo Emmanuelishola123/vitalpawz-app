@@ -34,7 +34,7 @@ export default function HeroSection({ width }: IHeroSectionProps) {
           At VitalPawz we make it easy for you to search the right supplements for your pet.
         </p>
         <div className="flex items-center flex-col sm:flex-row">
-          <MainButton onClick={() => push('/productList')} big classButton={styles.cta}>
+          <MainButton onClick={() => push('/product-list')} big classButton={styles.cta}>
             Shop Now
           </MainButton>
           <span className="relative inline-block sm:ml-16">
