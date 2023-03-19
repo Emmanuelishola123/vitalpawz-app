@@ -40,7 +40,8 @@
     "components/InstagramFollow.js",
     "pages/account/edit.js",
     "pages/privacy-policy/index.js",
-    "pages/add-pet/index.js"
+    "pages/add-pet/index.js",
+    "pages/product-list/index.js"
   ],
   "exclude": ["node_modules"]
 }

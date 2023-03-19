@@ -6,7 +6,7 @@ import style from 'styles/Banner.module.scss';
 const headText = 'Vitamins & Supplements';
 const descriptionText = ` It is a good idea to provide a supplementary vitamin and mineral supplement, and definitely a probiotic to balance the nutrient  depletion in the body`;
 
-const Banner = ({ title, description, image }) => {
+const Banner = ({ title = headText, description = descriptionText, image = dogImg }) => {
   return (
     <div className={style.wrapper}>
       <div className={style.content}>
