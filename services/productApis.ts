@@ -18,9 +18,9 @@ export interface ProductsType {
   meta: productMetaType;
 }
 
-export const retrieveAllProduct = async (): Promise<IApiResult<ProductsType>> => {
+export const retrieveAllProduct = async (pageNo = null): Promise<IApiResult<ProductsType>> => {
   try {
-    const response: AxiosResponse<ProductsType> = await api.get('/products?page=2');
+    const response: AxiosResponse<ProductsType> = await api.get(`/products?page=${pageNo}`);
     return { data: response.data, error: null };
     // return { data: response.data, error: null };
   } catch (error) {

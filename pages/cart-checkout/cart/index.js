@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import MainLayout from 'layouts/MainLayout';
 import YouLikeSection from '@/components/YouLikeSection';
@@ -11,12 +11,12 @@ import { useCartValue, getCartTotal, useCartState } from '../../../app/atom/cart
 import { setToCart } from '../../../features/cart/useCartService';
 import dynamic from 'next/dynamic';
 import { useRecoilValue } from 'recoil';
+import {applyCouponToProduct} from 'services/checkoutApis'
 
 const CartItem = dynamic(() => import('components/CartItems/CartItem.tsx'), { ssr: false });
 
 const CartTotal = () => {
   const cartTotal = useRecoilValue(getCartTotal);
-
   return <div className={style.TotalOrder}>Order Total ${cartTotal}</div>;
 };
 
@@ -26,6 +26,18 @@ const Cart = () => {
   const { push } = useRouter();
   const cartData = useCartValue();
   const [cart, setCart] = useCartState();
+  const [couponCode, setCouponCode] = useState('');
+
+// Apply coupon code to get discount
+const applyCouponCode = async () => {
+ try {
+  const data = await applyCouponToProduct()
+  return data
+ } catch (error) {
+  console.log(error)
+ }
+}
+   
 
   const setExistingCart = (product_id, quantity) => {
     const newCart = setToCart(cart, product_id, quantity);
@@ -48,7 +60,7 @@ const Cart = () => {
           ))}
           <CartTotalDynamic />
           <div className={style.RewardAndApply}>
-            <RewardCodeInput />
+            <RewardCodeInput couponCode={couponCode} setCouponCode={setCouponCode} applyCouponCode={applyCouponCode} />
             <button onClick={() => push('/cart-checkout/checkout')} className={style.ContinueButton}>
               Continue to buy
             </button>

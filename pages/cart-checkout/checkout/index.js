@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-
 import styles from 'styles/cart-checkout/checkout/style.module.scss';
 import sheldImg from '@/public/img/logo/icon-40-shield.svg';
 import Image from 'next/image';
@@ -19,6 +18,21 @@ import countryList from '../../../shared/countryList';
 import { toast } from 'react-toastify';
 import { postRequest, getRequest } from 'requests/api';
 import Router, { useRouter } from 'next/router';
+import { applyCouponToProduct, placeOrder } from './../../../services/checkoutApis';
+
+const paymentMethods = [
+  { label: 'Stripe', value: 'card' },
+  { label: 'Credit or Debit Card', value: 'credit_or_debit_card' },
+  {
+    label: 'Paypal',
+    value: 'paypal',
+  },
+  {
+    label: 'Google Pay',
+    value: 'google_pay',
+  },
+  { label: 'Apple Pay', value: 'apple_pay' },
+];
 
 const CartInfo = ({ data }) => {
   return (
@@ -48,6 +62,16 @@ const CartTotal = () => {
   return cartTotal;
 };
 
+// Apply coupon code to get discount
+const applyCouponCode = async () => {
+  try {
+    const data = await applyCouponToProduct();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const CartInfoDynamic = dynamic(() => Promise.resolve(CartInfo), { ssr: false });
 const CartTotalDynamic = dynamic(() => Promise.resolve(CartTotal), { ssr: false });
 
@@ -64,8 +88,17 @@ const Checkout = () => {
   } = useForm();
 
   const cartData = useCartValue();
+  console.log({ cartData, _authState });
 
-  console.log(cartData);
+  // Apply coupon code
+  const applyCouponCode = async () => {
+    try {
+      const data = await applyCouponToProduct();
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const onSubmit = (data) => {
     setDeliveryAdresses((current) => [...current, data]);
@@ -74,7 +107,7 @@ const Checkout = () => {
     // addNewAddressInputRef.current.prop('checked', false);
   };
 
-  const placeOrder = async () => {
+  const handlePlaceOrder = async () => {
     if (!userData.full_name) return toast.warning('Please enter your name');
     if (!userData.email) return toast.warning('Please enter your email');
     if (!userData.mobile) return toast.warning('Please enter your phone number');
@@ -86,19 +119,26 @@ const Checkout = () => {
       full_name: userData.full_name,
       email: userData.email,
       mobile: userData.mobile,
-      payment_type: 'card',
-      products,
+      payment_type: paymentMethod.value,
+      products:  [{
+        "id": "972c1454-0114-43ee-95fd-93693287e9fe",
+        "quantity": 1,
+        "options": []
+    }],
       street_address: selectedDeliveryAdresses.address,
       city: selectedDeliveryAdresses.city,
       country: selectedDeliveryAdresses.country,
       postal_code: selectedDeliveryAdresses.zipCode,
-      code: '',
     };
-    const res = await postRequest('/orders/pay', JSON.stringify(data));
-    if (res.data.url) {
-      location.replace(res.data.url);
-    }
-    console.log(res);
+    // const res = await postRequest('/orders/pay', JSON.stringify(data));
+    // if (res.data.url) {
+    //   location.replace(res.data.url);
+    // }
+
+    const res = await placeOrder(data);
+
+    if(!res?.error) return router.push(res?.data?.data?.url)
+    
   };
 
   const [state, setState] = useState('payment_method_card');
@@ -109,6 +149,7 @@ const Checkout = () => {
   const [userData, setUserData] = useState({});
   const addNewAddressRef = useRef(null);
   const addNewBillingAddressRef = useRef(null);
+  const [paymentMethod, setPaymentMethod] = useState({ label: 'Stripe', value: 'card' });
 
   useEffect(() => {
     if (addNewAddress) {
@@ -128,31 +169,33 @@ const Checkout = () => {
     }
   }, [addBillingAddress]);
 
-  const payment_method_card = () => {
-    if (state == 'payment_method_card') {
-      setState('card_none');
-    } else setState('payment_method_card');
-  };
-  const payment_method_paypal = () => {
-    if (state == 'payment_method_paypal') {
-      setState('paypal_none');
-    } else setState('payment_method_paypal');
-  };
-  const payment_method_gpay = () => {
-    if (state == 'payment_method_gpay') {
-      setState('gpay_none');
-    } else setState('payment_method_gpay');
-  };
-  const payment_method_applepay = () => {
-    if (state == 'payment_method_applepay') {
-      setState('applepay_none');
-    } else setState('payment_method_applepay');
-  };
-  const payment_method_amazonpay = () => {
-    if (state == 'payment_method_amazonpay') {
-      setState('amazonpay_none');
-    } else setState('payment_method_amazonpay');
-  };
+  // const payment_method_card = () => {
+  //   if (state == 'payment_method_card') {
+  //     setState('card_none');
+  //   } else setState('payment_method_card');
+  // };
+  // const payment_method_paypal = () => {
+  //   if (state == 'payment_method_paypal') {
+  //     setState('paypal_none');
+  //   } else setState('payment_method_paypal');
+  // };
+  // const payment_method_gpay = () => {
+  //   if (state == 'payment_method_gpay') {
+  //     setState('gpay_none');
+  //   } else setState('payment_method_gpay');
+  // };
+  // const payment_method_applepay = () => {
+  //   if (state == 'payment_method_applepay') {
+  //     setState('applepay_none');
+  //   } else setState('payment_method_applepay');
+  // };
+
+  // const payment_method_amazonpay = () => {
+  //   if (state == 'payment_method_amazonpay') {
+  //     setState('amazonpay_none');
+  //   } else setState('payment_method_amazonpay');
+  // };
+
   const [cart, setCart] = useCartState();
   const verifyOrder = async (id) => {
     const res = await postRequest('/orders/pay/success?session_id=' + id, JSON.stringify([]));
@@ -196,32 +239,33 @@ const Checkout = () => {
 
                     <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24}`}>
                       <div className={`${styles.pr_12} ${styles.width60} ${styles.sm_w_100} ${styles.sm_p_0}`}>
-                        <label htmlFor="username" className={styles.formLabel}>
+                        <label htmlFor="fullname" className={styles.formLabel}>
                           Full Name
                         </label>
                         <div>
                           <input
                             id="text"
-                            name="username"
-                            type="username"
-                            autoComplete="username"
+                            name="fullname"
+                            type="text"
+                            autoComplete="fullname"
                             placeholder="First & Last Name"
                             required
                             className={styles.formInput}
                             onChange={(e) => setUserData({ ...userData, full_name: e.target.value })}
+                            // {...register('full_name', { required: 'Please Enter Your Full Name', minLength: 3 })}
                           />
                         </div>
                       </div>
                       <div className={`${styles.width40} ${styles.sm_w_100} ${styles.sm_mt_24}`}>
-                        <label htmlFor="username" className={styles.formLabel}>
+                        <label htmlFor="tel" className={styles.formLabel}>
                           Contact Number
                         </label>
                         <div>
                           <input
-                            id="text"
-                            name="username"
-                            type="text"
-                            autoComplete="username"
+                            id="contact"
+                            name="contact"
+                            type="tel"
+                            autoComplete="contact"
                             placeholder="Contact"
                             // value={username}
                             // onChange={(e) => {
@@ -230,25 +274,30 @@ const Checkout = () => {
                             required
                             className={styles.formInput}
                             onChange={(e) => setUserData({ ...userData, mobile: e.target.value })}
+                            // {...register('mobile', { required: 'Please Enter Your Contact!', minLength: 5 })}
+
                             // formNoValidate={username === ''}
                           />
                         </div>
                       </div>
                       <div className={`${styles.width100} ${styles.mt_24}`}>
-                        <label htmlFor="username" className={styles.formLabel}>
+                        <label htmlFor="email" className={styles.formLabel}>
                           Email
                         </label>
                         <div>
                           <input
                             id="text"
-                            name="username"
-                            type="text"
-                            autoComplete="username"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
                             placeholder="Email"
-                            // value={username}
-                            // onChange={(e) => {
-                            //   setUsername(e.target.value);
-                            // }}
+                            // {...register('email', {
+                            //   required: 'Please Enter Your Email!',
+                            //   pattern: {
+                            //     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            //     message: 'Please Enter A Valid Email!',
+                            //   },
+                            // })}
                             required
                             className={styles.formInput}
                             onChange={(e) => setUserData({ ...userData, email: e.target.value })}
@@ -258,6 +307,7 @@ const Checkout = () => {
                       </div>
                       <div className={`${styles.width100} ${styles.mt_24} ${styles.checkoutCheckbox}`}>
                         <label
+                          // {...register('update_me')}
                           className={`${styles.flexRow} ${styles.flexNoWrap} ${styles.alignCenter} ${styles.justifyStart} `}
                         >
                           <input type="checkbox" className={`${styles.checkbox} mr-3`} />
@@ -303,7 +353,7 @@ const Checkout = () => {
                     className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24} ${styles.deliveryAddressBox}`}
                   >
                     {deliveryAdresses.map((address, index) => (
-                      <div className={`${styles.deliveryAddressItem}`}>
+                      <div key={index} className={`${styles.deliveryAddressItem}`}>
                         <label>
                           <input
                             type="radio"
@@ -339,7 +389,7 @@ const Checkout = () => {
                         className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24} border-t border-[#c2c2c2]`}
                       >
                         <div className={`${styles.width100} ${styles.mt_24}`}>
-                          <label htmlFor="username" className={styles.formLabel}>
+                          <label htmlFor="address" className={styles.formLabel}>
                             Address
                           </label>
                           <div>
@@ -351,7 +401,7 @@ const Checkout = () => {
                               placeholder="Address"
                               required
                               className={styles.formInput}
-                              {...register('address')}
+                              // {...register('address', { required: 'Please Enter Your Address' })}
                             />
                           </div>
                         </div>
@@ -369,7 +419,7 @@ const Checkout = () => {
                               placeholder="City / Suburb"
                               required
                               className={styles.formInput}
-                              {...register('city')}
+                              // {...register('city', { required: 'Please Enter Your City or Suburb' })}
                             />
                           </div>
                         </div>
@@ -379,6 +429,7 @@ const Checkout = () => {
                           <Label label="Country" />
                           <MySelect
                             setState={(v) => setValue('country', v.value)}
+                            // {...register('country', { required: 'Please Enter Your Country' })}
                             optionsArr={countryList}
                             placeholder={'Select country'}
                             classNamePrefix={'mySelect2'}
@@ -392,12 +443,12 @@ const Checkout = () => {
                             <input
                               id="text"
                               name="zipCode"
-                              type="text"
+                              type="number"
                               autoComplete="zipCode"
                               placeholder="Zip Code"
                               required
                               className={styles.formInput}
-                              {...register('zipCode')}
+                              // {...register('zipCode', { required: 'Please Enter Your Zip Code' })}
                             />
                           </div>
                         </div>
@@ -537,8 +588,10 @@ const Checkout = () => {
                       <p className={styles.description}>Safe and secure Payments.</p>
                     </div>
 
+                    <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24}`}></div>
+
                     <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24}`}>
-                      <div className={`${styles.width100}`} onClick={() => setState('payment_method_card')}>
+                      {/* <div className={`${styles.width100}`} onClick={() => setState('payment_method_card')}>
                         <div
                           className={`${styles.payment_method_box} ${
                             state == 'payment_method_card' ? styles.payment_method_box_active : ''
@@ -572,9 +625,9 @@ const Checkout = () => {
                             <></>
                           )}
                         </div>
-                      </div>
+                      </div> */}
 
-                      <div
+                      {/*   <div
                         className={`${styles.width100} ${styles.mt_14}`}
                         onClick={() => setState('payment_method_paypal')}
                       >
@@ -689,8 +742,28 @@ const Checkout = () => {
                             <></>
                           )}
                         </div>
-                      </div>
+                      </div>*/}
                     </div>
+                    {paymentMethods.map((method, index) => (
+                      <div
+                        key={index}
+                        onClick={(e) => setPaymentMethod({ ...method })}
+                        className={`${styles.flexRow} ${styles.mt_24}`}
+                      >
+                        <label className={`${styles.flexRow} ${styles.alignCenter} `}>
+                          <input
+                            type="radio"
+                            name="payment_method"
+                            onChange={(e) => setPaymentMethod({ ...method })}
+                            checked={paymentMethod.value === method.value}
+                            className={`cursor-pointer`}
+                            style={{ marginRight: '1rem' }}
+                          />
+
+                          <p>{method.label}</p>
+                        </label>
+                      </div>
+                    ))}
 
                     <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24}`}>
                       <div className={`${styles.TotalOrder} ${styles.width50} ${styles.md_w_100}`}>
@@ -701,7 +774,7 @@ const Checkout = () => {
                       >
                         <button
                           type="button"
-                          onClick={placeOrder}
+                          onClick={handlePlaceOrder}
                           className={`${styles.ContinueButton} ${styles.md_mt_12} ${styles.sm_text_center}`}
                         >
                           Pay & Continue
@@ -778,15 +851,16 @@ const Checkout = () => {
 
             <div className={`border-none ${styles.width100} ${styles.discount_box} ${styles.sm_text_center}`}>
               <input
-                id="text"
-                name="username"
+                id="couponCode"
+                name="couponCode"
                 type="text"
-                autoComplete="username"
+                autoComplete="couponCode"
                 placeholder="Gift or Discount Code"
-                required
                 className={styles.discount_input}
               />
-              <button className={styles.ContinueButton}>Apply</button>
+              <button className={styles.ContinueButton} onClick={applyCouponCode}>
+                Apply
+              </button>
             </div>
 
             <div className={styles.rewards}>You will earn: 20 points</div>

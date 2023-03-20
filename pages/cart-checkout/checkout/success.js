@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import styles from 'styles/cart-checkout/checkout/success/style.module.scss';
 import sheldImg from '@/public/img/logo/icon-40-shield.svg';
@@ -11,15 +11,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 const Checkout = () => {
+  const [orderInfo, setOrderInfo] = useState({});
   const router = useRouter();
 
   useEffect(() => {
-    if (!router.query) return router.push('/');
-    if (!router.query.data) return router.push('/');
-
+    if (!router.query || !router.query.data) return router.push('/');
     const data = JSON.parse(decodeURIComponent(router.query.data));
+    setOrderInfo({ ...data });
   }, []);
-  console.log(JSON.parse(decodeURIComponent(router.query.data)));
+
+  console.log({ orderInfo });
+
   return (
     <div className={styles.mainBody}>
       <div className={styles.wrapper}>
@@ -30,7 +32,7 @@ const Checkout = () => {
                 <form className="" action="/" method="POST">
                   <div className="">
                     <div className={`${styles.reward_box}`}>
-                      <h4 className={`${styles.checkoutBoxHeader2} ${styles.sm_m_0}`}>Thank you Elizabeth!</h4>
+                      <h4 className={`${styles.checkoutBoxHeader2} ${styles.sm_m_0}`}>Thank you</h4>
                       <h4 className={`${styles.checkoutBoxHeader3}`}>
                         Your earned <b>100</b> <Image alt="Reward Crown Icon" src={crown} width={24} height={24} />{' '}
                         rewards points on this order
@@ -65,10 +67,10 @@ const Checkout = () => {
                       className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24} ${styles.order_totals}`}
                     >
                       <div>
-                        Order <b>#1234156</b>
+                        Order <b>#{orderInfo?.short_id}</b>
                       </div>
                       <div>
-                        Total <b>$96.98</b>
+                        Total <b>${orderInfo?.totals?.total}</b>
                       </div>
                     </div>
 
@@ -76,10 +78,10 @@ const Checkout = () => {
                       className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24} ${styles.total_items}`}
                     >
                       <div>
-                        Total items <br /> <b>12</b>
+                        Total items <br /> <b>{orderInfo?.products?.length}</b>
                       </div>
                       <div>
-                        Payment <br /> <b>Paid</b>
+                        Payment <br /> <b>{orderInfo?.status?.title}</b>
                       </div>
                       <div>
                         Rewards <Image alt="Reward Crown Icon" src={crown} width={16} height={16} /> <br /> <b>$3.56</b>
@@ -87,24 +89,22 @@ const Checkout = () => {
                     </div>
 
                     <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.order_items}`}>
-                      <div className={`${styles.order_img}`}>
-                        <Image src={CartItemPreview} alt="arrow down" />
-                      </div>
-                      <div className={`${styles.order_img}`}>
-                        <Image src={CartItemPreview} alt="arrow down" />
-                      </div>
-                      <div className={`${styles.order_img}`}>
-                        <Image src={CartItemPreview} alt="arrow down" />
-                      </div>
-                      <div className={`${styles.order_img}`}>
-                        <Image src={CartItemPreview} alt="arrow down" />
-                      </div>
-                      <div>
-                        <h4 className={`${styles.order_title} font-bold mb-[4px]`}>+5 more</h4>
-                        <Link href={`/`} className={`${styles.order_title} underline`}>
-                          View Details
-                        </Link>
-                      </div>
+                      {orderInfo?.products?.map((product) => (
+                        <div className={`${styles.order_img}`}>
+                          <Image src={product?.product?.cover} alt="arrow down" width={'90px'} height="110px" />
+                        </div>
+                      ))}
+
+                      {orderInfo?.products?.length > 4 && (
+                        <div>
+                          <h4 className={`${styles.order_title} font-bold mb-[4px]`}>
+                            +{orderInfo?.products?.slice(4).length} more
+                          </h4>
+                          <Link href={`/`} className={`${styles.order_title} underline`}>
+                            View Details
+                          </Link>
+                        </div>
+                      )}
                     </div>
 
                     <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} mt-[16px]`}>
@@ -145,7 +145,7 @@ const Checkout = () => {
                       </div>
                       <div className={`${styles.show_delivery_address_accountInfo2}`}>
                         <div>Email:</div>
-                        <div>elizabeth.collins@gmail.com</div>
+                        <div>{orderInfo?.address?.email}</div>
                       </div>
                       <div className={`${styles.show_delivery_address_accountInfo2}`}>
                         <div>Phone:</div>
