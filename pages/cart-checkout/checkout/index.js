@@ -19,6 +19,7 @@ import { toast } from 'react-toastify';
 import { postRequest, getRequest } from 'requests/api';
 import Router, { useRouter } from 'next/router';
 import { applyCouponToProduct, placeOrder } from './../../../services/checkoutApis';
+import { Button } from '@chakra-ui/react';
 
 const paymentMethods = [
   { label: 'Stripe', value: 'card' },
@@ -76,6 +77,7 @@ const CartInfoDynamic = dynamic(() => Promise.resolve(CartInfo), { ssr: false })
 const CartTotalDynamic = dynamic(() => Promise.resolve(CartTotal), { ssr: false });
 
 const Checkout = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { session_id } = router.query;
   const [_authState, setAuthState] = useAuthState();
@@ -88,7 +90,7 @@ const Checkout = () => {
   } = useForm();
 
   const cartData = useCartValue();
-  console.log({ cartData, _authState });
+  // console.log({ cartData, _authState });
 
   // Apply coupon code
   const applyCouponCode = async () => {
@@ -108,10 +110,23 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!userData.full_name) return toast.warning('Please enter your name');
-    if (!userData.email) return toast.warning('Please enter your email');
-    if (!userData.mobile) return toast.warning('Please enter your phone number');
-    if (!selectedDeliveryAdresses) return toast.warning('Please select delivery address');
+    setIsLoading(true);
+    if (!userData.full_name) {
+      setIsLoading(false);
+      return toast.warning('Please enter your name');
+    }
+    if (!userData.email) {
+      setIsLoading(false);
+      return toast.warning('Please enter your email');
+    }
+    if (!userData.mobile) {
+      setIsLoading(false);
+      return toast.warning('Please enter your phone number');
+    }
+    if (!selectedDeliveryAdresses) {
+      setIsLoading(false);
+      return toast.warning('Please select delivery address');
+    }
 
     const products = [];
     cartData.map((v) => products.push({ id: v.product.id, quantity: v.quantity, options: [v.product.id] }));
@@ -120,11 +135,13 @@ const Checkout = () => {
       email: userData.email,
       mobile: userData.mobile,
       payment_type: paymentMethod.value,
-      products:  [{
-        "id": "972c1454-0114-43ee-95fd-93693287e9fe",
-        "quantity": 1,
-        "options": []
-    }],
+      products: [
+        {
+          id: '972c1454-0114-43ee-95fd-93693287e9fe',
+          quantity: 1,
+          options: [],
+        },
+      ],
       street_address: selectedDeliveryAdresses.address,
       city: selectedDeliveryAdresses.city,
       country: selectedDeliveryAdresses.country,
@@ -136,9 +153,8 @@ const Checkout = () => {
     // }
 
     const res = await placeOrder(data);
-
-    if(!res?.error) return router.push(res?.data?.data?.url)
-    
+    setIsLoading(false);
+    if (!res?.error) return router.push(res?.data?.data?.url);
   };
 
   const [state, setState] = useState('payment_method_card');
@@ -168,33 +184,6 @@ const Checkout = () => {
       });
     }
   }, [addBillingAddress]);
-
-  // const payment_method_card = () => {
-  //   if (state == 'payment_method_card') {
-  //     setState('card_none');
-  //   } else setState('payment_method_card');
-  // };
-  // const payment_method_paypal = () => {
-  //   if (state == 'payment_method_paypal') {
-  //     setState('paypal_none');
-  //   } else setState('payment_method_paypal');
-  // };
-  // const payment_method_gpay = () => {
-  //   if (state == 'payment_method_gpay') {
-  //     setState('gpay_none');
-  //   } else setState('payment_method_gpay');
-  // };
-  // const payment_method_applepay = () => {
-  //   if (state == 'payment_method_applepay') {
-  //     setState('applepay_none');
-  //   } else setState('payment_method_applepay');
-  // };
-
-  // const payment_method_amazonpay = () => {
-  //   if (state == 'payment_method_amazonpay') {
-  //     setState('amazonpay_none');
-  //   } else setState('payment_method_amazonpay');
-  // };
 
   const [cart, setCart] = useCartState();
   const verifyOrder = async (id) => {
@@ -368,20 +357,21 @@ const Checkout = () => {
                         {/* <Link href={`/`}>Edit</Link> */}
                       </div>
                     ))}
-                  {(_authState) &&
-                    <div className={`${styles.deliveryAddressItem}`}>
-                      <label>
-                        <input
-                          onChange={() => setAddNewAddress((prev) => !prev)}
-                          type="checkbox"
-                          className={`cursor-pointer`}
-                          checked={addNewAddress}
-                        />
-                        <p>Add New Address</p>
-                      </label>
-                    </div>}
+                    {_authState && (
+                      <div className={`${styles.deliveryAddressItem}`}>
+                        <label>
+                          <input
+                            onChange={() => setAddNewAddress((prev) => !prev)}
+                            type="checkbox"
+                            className={`cursor-pointer`}
+                            checked={addNewAddress}
+                          />
+                          <p>Add New Address</p>
+                        </label>
+                      </div>
+                    )}
                   </div>
-                
+
                   {(!_authState || addNewAddress) && (
                     <form onSubmit={handleSubmit(onSubmit)}>
                       <div
@@ -463,7 +453,7 @@ const Checkout = () => {
                 {/* </form> */}
               </div>
             </div>
-{/* 
+            {/* 
             {(!(_authState) || addBillingAddress) && (
               <div
                 ref={addNewBillingAddressRef}
@@ -750,17 +740,17 @@ const Checkout = () => {
                         onClick={(e) => setPaymentMethod({ ...method })}
                         className={`${styles.flexRow} ${styles.mt_24}`}
                       >
-                        <label className={`${styles.flexRow} ${styles.alignCenter} `}>
+                        <label className={`${styles.flexRow} ${styles.alignCenter}`}>
                           <input
                             type="radio"
                             name="payment_method"
                             onChange={(e) => setPaymentMethod({ ...method })}
                             checked={paymentMethod.value === method.value}
-                            className={`cursor-pointer`}
+                            className={`cursor-pointer `}
                             style={{ marginRight: '1rem' }}
+                            disabled={isLoading ? true : false}
                           />
-
-                          <p>{method.label}</p>
+                        {method.label}
                         </label>
                       </div>
                     ))}
@@ -776,9 +766,42 @@ const Checkout = () => {
                           type="button"
                           onClick={handlePlaceOrder}
                           className={`${styles.ContinueButton} ${styles.md_mt_12} ${styles.sm_text_center}`}
+                        
+                      >
+                          {isLoading ? <div className={`${styles.spinner}`} ><svg className={`${styles.spin}`} viewBox="0 0 50 50">
+              <circle  className={`${styles.path}`} cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                  </svg> Placing Order</div> : 'Pay & Continue'}
+                        </button>
+                        {/* <Button
+                          width={'246px'}
+                          maxWidth={'100%'}
+                          height={'62px'}
+                          borderRadius={'8px'}
+                          fontFamily={'PlusJakartaSans'}
+                          bg={'#f8b84a'}
+                          color="#4a2072"
+                          fontWeight={'bold'}
+                          fontStretch="normal"
+                          fontStyle="normal"
+                          lineHeight="normal"
+                          letterSpacing="0.32px"
+                          textAlign="center"
+                          onClick={handlePlaceOrder}
+                          loadingText="Placing Order"
+                          variant="solid"
+                      
+                          mt={'12px'}
+                          __hover={{
+                            bg: '#f8b84a',
+                            color: "#4a2072"
+                          }}
+                          __focus={{
+                            bg: '#f8b84a',
+                            color: "#4a2072"
+                          }}
                         >
                           Pay & Continue
-                        </button>
+                        </Button> */}
                       </div>
                     </div>
 

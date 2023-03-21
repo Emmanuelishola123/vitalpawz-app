@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.min.css';
 import 'react-rangeslider/lib/index.css';
 import '@/pages/add-pet/components/MyRangeSlider.scss';
 import { AppWrapper } from 'layouts/AppWrapper.layout';
+// import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 
 import { IHomePageResponse } from 'types/responses/homePage.response';
 
@@ -24,6 +25,16 @@ import { isLocal } from '@/bootstrap/app.config';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const queryClient = new QueryClient()
+
+// const theme = extendTheme({
+//   colors: {
+//     brand: {
+//       100: "#f7fafc",
+//       // ...
+//       900: "#1a202c",
+//     },
+//   },
+// })
 
 
 import { AppContext } from 'next/app';
@@ -63,6 +74,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <RecoilRoot>
         <FormContext>
           <QueryClientProvider client={queryClient}>
+            {/* <ChakraProvider theme={theme}> */}
             <AppWrapper
               user={pageProps.user}
               token={pageProps.token}
@@ -76,6 +88,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 <Component {...pageProps} />
               </PageLayout>
             </AppWrapper>
+            {/* </ChakraProvider> */}
           </QueryClientProvider>
         </FormContext>
       </RecoilRoot>
