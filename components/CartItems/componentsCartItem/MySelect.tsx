@@ -26,7 +26,7 @@ const MySelect: FC<IMySelectProps> = ({ state, setState, optionsArr = options, c
       className="mySelect"
       onChange={handleChange}
       options={optionsArr}
-      getOptionLabel={(option) => option.value}
+      getOptionLabel={(option) => option.title}
       classNamePrefix={classNamePrefix}
       isSearchable={false}
       components={{

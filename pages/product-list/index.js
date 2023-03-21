@@ -27,7 +27,6 @@ const DEFAULT_ITEMS_PER_PAGE = 10;
 const ProductList = () => {
   const [title, setTitle] = useState('Vitamins & Supplements');
   const [modalActive, setModalActive] = useState(false);
-  const [sortItem, setSortItem] = useState('Popularity');
   const { width } = useWindowDimensions();
   const [open, setOpen] = useState(false);
   const [currentItems, setCurrentItems] = useState(null);
@@ -42,12 +41,13 @@ const ProductList = () => {
   const [filteredCategoriesId, setFilteredCategoriesId] = useState([]);
   const [filteredBrandsId, setFilteredBrandsId] = useState([]);
   const [productFilters, setProductFilters] = useState(null);
+  const [sortItem, setSortItem] = useState({});
   // console.log({filteredCategoriesId, filteredBrandsId})
   const {
     data: items,
     isLoading,
     isError,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ['productLists'],
     // queryFn: retrieveAllProduct,
@@ -66,17 +66,18 @@ const ProductList = () => {
   };
 
   useEffect(() => {
-    if ( items?.data) {
+    if (items?.data) {
       let categories = items?.data?.meta?.categories;
       let brands = items?.data?.meta?.brands;
       let sorting = items?.data?.meta?.sorting;
       setFilterCategories([...categories]);
       setFilterBrands([...brands]);
       setFilterSorting([...sorting]);
+      setSortItem(filterSorting[0]);
     }
   }, [items, isError, isLoading]);
 
-  console.log({isLoading, isError, items})
+  console.log({ isLoading, isError, items });
 
   useEffect(() => {
     let filter = '';
@@ -91,10 +92,14 @@ const ProductList = () => {
         filter = filter + `brands[]=${id}&`;
       });
     }
-let f = filter.slice(0, filter.length-1)
-    setProductFilters(f)
-
-refetch()
+    if (sortItem) {
+      filter = filter + `sort_by=${sortItem?.sort_by}&`;
+      filter = filter + `sort_dir=${sortItem?.sort_dir}&`;
+    }
+    let f = filter.slice(0, filter.length - 1);
+    setProductFilters(f);
+console.log({f})
+    refetch();
   }, [filteredCategoriesId, filteredBrandsId, filterSorting]);
 
   // useEffect(() => {
@@ -173,14 +178,14 @@ refetch()
                   <label className={style.label}>Sort by: </label>
                   {width > 500 ? (
                     <MySelect
-                      optionsArr={Level}
+                      optionsArr={filterSorting}
                       state={sortItem}
                       setState={setSortItem}
                       classNamePrefix={'mySelectPref'}
                     />
                   ) : (
                     <span className={style.ModalSelectSort} onClick={setModalActiveSelect}>
-                      {sortItem}
+                      {sortItem?.title}
                     </span>
                   )}
                 </div>
@@ -269,16 +274,16 @@ refetch()
       />
       <MySelectModal active={modalActive} setActive={setModalActive}>
         <h3>Sort By</h3>
-        {Level.map((item) => (
+        {filterSorting.map((item) => (
           <div
             onClick={() => {
-              setSortItem(item.value);
+              setSortItem(item);
               setModalActive(false);
             }}
             className="SortItem"
-            key={item.text}
+            key={item.title}
           >
-            {item.text}
+            {item.title}
           </div>
         ))}
       </MySelectModal>
