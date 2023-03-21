@@ -1,25 +1,33 @@
 import React from "react";
 import style from "styles/productList/components/CheckItem.module.scss";
 const CheckItem = ({
-  index,
-  selected,
   title,
-  count,
-  Categories,
+  id,
+  categories,
   setCategories,
 }) => {
+
+
   const changeCategories = () => {
-    const CategoriesTemp = [...Categories];
-    CategoriesTemp[index].selected =
-      CategoriesTemp[index].selected === true ? false : true;
-    setCategories(CategoriesTemp);
+      if(categories.includes(id)){
+        let newCategories = categories.filter((d) => d !== id)
+        if(newCategories.length > 0){
+          setCategories([...newCategories])
+        }else {
+          setCategories([])
+        }
+        
+      }else{ 
+       setCategories([...categories, id])
+      }
   };
+
   return (
     <div className={style.wrapper}>
       <input
         type="checkbox"
         className={style.checkbox}
-        checked={selected}
+        checked={categories.includes(id)}
         onChange={() => {
           changeCategories();
         }}
@@ -29,7 +37,7 @@ const CheckItem = ({
           changeCategories();
         }}
         className={style.title}
-      >{`${title} (${count})`}</div>
+      >{title}</div>
     </div>
   );
 };

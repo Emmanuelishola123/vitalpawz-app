@@ -30,16 +30,28 @@ const ProductList = () => {
   const [sortItem, setSortItem] = useState('Popularity');
   const { width } = useWindowDimensions();
   const [open, setOpen] = useState(false);
-
-  // Get current User info
-
+  const [currentItems, setCurrentItems] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemOffset, setItemOffset] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const topOfProductsRef = useRef(null);
+  const [filterCategories, setFilterCategories] = useState([]);
+  const [filterBrands, setFilterBrands] = useState([]);
+  const [filterSorting, setFilterSorting] = useState([]);
+  const [filteredCategoriesId, setFilteredCategoriesId] = useState([]);
+  const [filteredBrandsId, setFilteredBrandsId] = useState([]);
+  const [productFilters, setProductFilters] = useState(null);
+  // console.log({filteredCategoriesId, filteredBrandsId})
   const {
     data: items,
     isLoading,
     isError,
+    refetch
   } = useQuery({
     queryKey: ['productLists'],
-    queryFn: retrieveAllProduct,
+    // queryFn: retrieveAllProduct,
+    queryFn: () => retrieveAllProduct(productFilters),
   });
 
   //  const items = data.data.data
@@ -52,12 +64,38 @@ const ProductList = () => {
     setSortItem(item);
     setModalActive(false);
   };
-  const [currentItems, setCurrentItems] = useState(null);
-  const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [itemOffset, setItemOffset] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
-  const topOfProductsRef = useRef(null);
+
+  useEffect(() => {
+    if ( items?.data) {
+      let categories = items?.data?.meta?.categories;
+      let brands = items?.data?.meta?.brands;
+      let sorting = items?.data?.meta?.sorting;
+      setFilterCategories([...categories]);
+      setFilterBrands([...brands]);
+      setFilterSorting([...sorting]);
+    }
+  }, [items, isError, isLoading]);
+
+  console.log({isLoading, isError, items})
+
+  useEffect(() => {
+    let filter = '';
+
+    if (filteredCategoriesId) {
+      filteredCategoriesId.forEach((id) => {
+        filter = filter + `categories[]=${id}&`;
+      });
+    }
+    if (filteredBrandsId) {
+      filteredBrandsId.forEach((id) => {
+        filter = filter + `brands[]=${id}&`;
+      });
+    }
+let f = filter.slice(0, filter.length-1)
+    setProductFilters(f)
+
+refetch()
+  }, [filteredCategoriesId, filteredBrandsId, filterSorting]);
 
   // useEffect(() => {
   //   const countFeaturedItems = items?.slice(itemOffset, endOffset).filter((obj) => obj.type === 'Featured').length;
@@ -152,7 +190,14 @@ const ProductList = () => {
         </div>
         <div className={style.contentWrapper}>
           <div className={style.filter}>
-            <Filter />
+            <Filter
+              categoriesFilter={filterCategories}
+              brandsFilter={filterBrands}
+              filteredBrandsId={filteredBrandsId}
+              setFilteredBrandsId={setFilteredBrandsId}
+              filteredCategoriesId={filteredCategoriesId}
+              setFilteredCategoriesId={setFilteredCategoriesId}
+            />
           </div>
           <div className={style.products}>
             <div className={style.productWrapper}>
@@ -197,6 +242,7 @@ const ProductList = () => {
                     .map((v, i) => <SkeletonCard key={i} />)}
             </div>
             <div className={style.MyPagination}>
+              {/* TODO */}
               <MyPagination
                 items={items?.data?.data}
                 pageCount={items?.data?.meta?.pagination?.total_pages}
@@ -209,7 +255,18 @@ const ProductList = () => {
           </div>
         </div>
       </div>
-      <SlideOver open={open} setOpen={setOpen} />
+
+      {/* PROGRESS */}
+      <SlideOver
+        open={open}
+        setOpen={setOpen}
+        categoriesFilter={filterCategories}
+        brandsFilter={filterBrands}
+        filteredBrandsId={filteredBrandsId}
+        setFilteredBrandsId={setFilteredBrandsId}
+        filteredCategoriesId={filteredCategoriesId}
+        setFilteredCategoriesId={setFilteredCategoriesId}
+      />
       <MySelectModal active={modalActive} setActive={setModalActive}>
         <h3>Sort By</h3>
         {Level.map((item) => (

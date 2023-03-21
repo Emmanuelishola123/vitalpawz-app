@@ -5,7 +5,10 @@ import leftArror from "@/public/img/logo/icon-16-arrow-with-point-left.svg";
 import Filter from "./Filter";
 import style from "styles/productList/components/SlideOver.module.scss";
 
-const SlideOver = ({ open = false, setOpen }) => {
+const SlideOver = ({ open = false, setOpen, categoriesFilter, brandsFilter,filteredBrandsId,  setFilteredBrandsId,
+  filteredCategoriesId,
+  setFilteredCategoriesId
+  }) => {
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -35,7 +38,15 @@ const SlideOver = ({ open = false, setOpen }) => {
                   >
                     <Image src={leftArror} alt="close" />
                   </button>
-                  <Filter />
+                  <Filter
+              categoriesFilter={categoriesFilter}
+              brandsFilter={brandsFilter}
+              filteredBrandsId={filteredBrandsId}
+              setFilteredBrandsId={setFilteredBrandsId}
+              filteredCategoriesId={filteredCategoriesId}
+              setFilteredCategoriesId={setFilteredCategoriesId}
+            />
+
                 </div>
 
                 <div className={style.bottomWrapper}>

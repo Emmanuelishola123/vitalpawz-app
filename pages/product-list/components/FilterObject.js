@@ -6,7 +6,7 @@ import arrowRight from "@/public/img/logo/arrow-right.svg";
 import style from "styles/productList/components/FilterObject.module.scss";
 import CheckItem from "./CheckItem";
 
-const FilterObject = ({ title, filter, onChange }) => {
+const FilterObject = ({ title, filter, onChange, filteredIds }) => {
   const [show, setShow] = useState(true);
   return (
     <div className={style.wrapper}>
@@ -36,11 +36,9 @@ const FilterObject = ({ title, filter, onChange }) => {
           return (
             <CheckItem
               key={index}
-              index={index}
-              selected={e.selected}
-              title={e.title}
-              count={e.count}
-              Categories={filter}
+              title={e?.name}
+              id={e?.id}
+              categories={filteredIds}
               setCategories={onChange}
             />
           );
