@@ -368,7 +368,7 @@ const Checkout = () => {
                         {/* <Link href={`/`}>Edit</Link> */}
                       </div>
                     ))}
-
+                  {(_authState) &&
                     <div className={`${styles.deliveryAddressItem}`}>
                       <label>
                         <input
@@ -379,10 +379,10 @@ const Checkout = () => {
                         />
                         <p>Add New Address</p>
                       </label>
-                    </div>
+                    </div>}
                   </div>
-
-                  {addNewAddress && (
+                
+                  {(!_authState || addNewAddress) && (
                     <form onSubmit={handleSubmit(onSubmit)}>
                       <div
                         ref={addNewAddressRef}
@@ -463,8 +463,8 @@ const Checkout = () => {
                 {/* </form> */}
               </div>
             </div>
-
-            {addBillingAddress && (
+{/* 
+            {(!(_authState) || addBillingAddress) && (
               <div
                 ref={addNewBillingAddressRef}
                 className={`${styles.flexRow} ${styles.mt_14} ${styles.flexWrap} ${styles.checkoutBox}`}
@@ -567,7 +567,7 @@ const Checkout = () => {
                   </form>
                 </div>
               </div>
-            )}
+            )} */}
 
             <div className={`${styles.flexRow} ${styles.mt_14} ${styles.flexWrap} ${styles.checkoutBox}`}>
               <div className={`${styles.width100}`}>
