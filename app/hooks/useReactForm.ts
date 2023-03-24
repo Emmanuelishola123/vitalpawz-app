@@ -89,6 +89,8 @@ export default function useReactForm<TRes, TReq extends Record<string, unknown>>
     setIsLoading(isLoading || postProcessing || isRouteChanging);
   }, [postProcessing, isRouteChanging]);
 
+
+  
   const onSubmit: SubmitHandler<TReq> = async (data) => {
     delete data.promise;
     const hasChanged = requestType !== 'patch' || hasFieldsChanged(data, initialValues || {});
@@ -105,12 +107,14 @@ export default function useReactForm<TRes, TReq extends Record<string, unknown>>
       axiosConfig
     )
       .then(async (response) => {
+        console.log({response})
         setPostProcessing(true);
         await onSuccess(response);
         isMounted && setPostProcessing(false);
         return response;
       })
       .catch((e: IHandledApiError) => {
+        console.log({e})
         onError(e);
         return e;
       })

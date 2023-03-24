@@ -2,12 +2,13 @@ import { AuthLayoutTitle } from 'layouts/Auth.layout';
 import style from 'styles/auth/login/style.module.scss';
 import { object, SchemaOf, string } from 'yup';
 import useReactForm from 'hooks/useReactForm';
-
 import { FormProvider } from 'react-hook-form';
 import RHookFormControl from 'components/forms/RHookFormControl';
 import useAuthService from 'features/auth/hooks/useAuthService';
 import { IApiResponse } from 'types/request.types';
 import { IUserSchema } from 'schemas/account.schema';
+
+
 
 type ILoginFormProps = {
   email: string;
@@ -38,6 +39,7 @@ export default function LoginPasswordForm({ email, first_name }: ILoginFormProps
     },
     {
       onSuccess: ({ data: { user, token } }) => {
+        console.log({user})
         setAuth(token, user);
       },
     }

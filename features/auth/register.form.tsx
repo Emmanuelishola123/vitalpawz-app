@@ -2,7 +2,6 @@ import { AuthLayoutTitle } from 'layouts/Auth.layout';
 import style from 'styles/auth/login/style.module.scss';
 import { object, ref, SchemaOf, string } from 'yup';
 import useReactForm from 'hooks/useReactForm';
-
 import { FormProvider } from 'react-hook-form';
 import RHookFormControl from 'components/forms/RHookFormControl';
 import { IApiResponse } from 'types/request.types';

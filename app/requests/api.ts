@@ -9,8 +9,8 @@ import mutate from 'swr';
 
 export const api = axios.create({
   headers: {
-    Accept: 'application/json',
     'Content-Type': 'application/json',
+    Accept: 'application/json',
   },
   baseURL: getEnv('apiUrl', 'http://localhost:3000/api'),
 });

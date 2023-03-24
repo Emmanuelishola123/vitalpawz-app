@@ -7,7 +7,6 @@ import { ISocialAuthUser } from 'types/auth.types';
 import { object, SchemaOf, string } from 'yup';
 import useReactForm from 'hooks/useReactForm';
 import { IUserSchema } from 'schemas/account.schema';
-
 import { FormProvider } from 'react-hook-form';
 import usePromise from 'hooks/usePromise';
 import { postRequest } from 'requests/api';
@@ -15,6 +14,7 @@ import { IApiResponse } from 'types/request.types';
 import RHookFormControl from 'components/forms/RHookFormControl';
 import { IAuthFormData } from '@/pages/auth/login';
 import useAuthService from 'features/auth/hooks/useAuthService';
+import styles from 'styles/cart-checkout/checkout/style.module.scss';
 
 type ILoginFormProps = {
   setLoginFormState: (data: IAuthFormData) => void;
@@ -34,11 +34,12 @@ export default function LoginForm({ setLoginFormState }: ILoginFormProps) {
 
   const { methods, submitHandler, isLoading } = useReactForm<{ user_exist: boolean; user: any }, ILoginRequest>(
     'post',
-    `/auth/check`,
+    `/auth/login`,
     formSchema,
     undefined,
     {
       onSuccess: ({ user_exist, user }) => {
+        console.log({methods}, methods.getValues('email'), {user} )
         setLoginFormState({ email: methods.getValues('email'), exists: user_exist, first_name: user.first_name });
       },
     }
@@ -71,7 +72,9 @@ export default function LoginForm({ setLoginFormState }: ILoginFormProps) {
               placeholder={'Enter Email Address'}
             />
             <button type="submit" className={style.emailButton}>
-              Continue with Email
+            {isLoading ? <div className={`${styles.spinner}`} ><svg className={`${styles.spin}`} viewBox="0 0 50 50">
+              <circle  className={`${styles.path}`} cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                  </svg> Submitting </div> :  'Continue with Email'}
             </button>
             <div className={style.orWrapper}>
               <p className={style.or}>OR</p>
