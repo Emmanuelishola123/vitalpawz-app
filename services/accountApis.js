@@ -10,8 +10,8 @@ import api from './api';
  */
 export const updateAccount = async (data) => {
   try {
-    const response = await api.patch(`/auth/edit`, {
-      ...data,
+    const response = await api(data?.token).patch(`/auth/edit`, {
+      ...data, token: undefined,
     });
     return { data: response.data, error: null };
   } catch (error) {

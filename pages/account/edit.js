@@ -9,14 +9,23 @@ import useReactForm from './../../../vitalpawz-app old/app/hooks/useReactForm';
 import { useMutation } from '@tanstack/react-query';
 import { updateAccount } from './../../services/accountApis';
 import { useState, useEffect } from 'react';
+import styles from '../../styles/cart-checkout/checkout/style.module.scss';
+
 
 const EditAccount = () => {
   const [_authState, setAuthState] = useAuthState();
   const [userData, setUserData] = useState({});
-  console.log({_authState});
+  console.log({ _authState });
 
   // Update account api
-  const [mutate, { status }] = useMutation((updatedData) => updateAccount(updatedData))
+  const { mutate, isLoading, error } = useMutation(updateAccount, {
+    onSuccess: (data) => {
+   console.log({data})
+    }
+    // onError: (error) => {
+    //   // Error actions
+    // },
+  });
 
   const handleUpdate = () => {
     mutate({ ...userData });
@@ -24,10 +33,16 @@ const EditAccount = () => {
 
   useEffect(() => {
     return () => {
-      setUserData({..._authState})
-    }
-  }, [_authState])
-  
+      setUserData({
+        email: _authState?.user?.email,
+        full_name: _authState?.user?.full_name,
+        mobile: _authState?.user?.mobile,
+        token: _authState?.token,
+      });
+    };
+  }, [_authState]);
+
+  // console.log({userData})
 
   return (
     <>
@@ -52,7 +67,21 @@ const EditAccount = () => {
           </span>
         </div>
         <div className="w-full mt-[28px]">
-          <PrimarySmall className="w-[168px] h-[44px] mr-10px mb-11px md:mb-0" text="Save Changes" />
+          <PrimarySmall
+            className="w-[168px] h-[44px] mr-10px mb-11px md:mb-0"
+            text={
+              isLoading ? (
+                <div className={`${styles.spinner}`}>
+                  <svg className={`${styles.spin}`} viewBox="0 0 50 50">
+                    <circle className={`${styles.path}`} cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                  </svg>{' '}
+                  Updating{' '}
+                </div>
+              ) : (
+                'Save Changes'
+              )
+            }
+          />
           <SecondarySmall className="w-[168px] h-[44px]" text="Cancel" />
         </div>
       </div>
