@@ -5,10 +5,30 @@ import createGetServerSidePropsFn from 'shared/createGetServerSidePropsFn';
 import PrimarySmall from 'components/Buttons/PrimarySmall';
 import SecondarySmall from 'components/Buttons/SecondarySmall';
 import { useAuthState } from '@/app/atom/auth.atom';
+import useReactForm from './../../../vitalpawz-app old/app/hooks/useReactForm';
+import { useMutation } from '@tanstack/react-query';
+import { updateAccount } from './../../services/accountApis';
+import { useState, useEffect } from 'react';
 
 const EditAccount = () => {
   const [_authState, setAuthState] = useAuthState();
-  console.log(_authState);
+  const [userData, setUserData] = useState({});
+  console.log({_authState});
+
+  // Update account api
+  const [mutate, { status }] = useMutation((updatedData) => updateAccount(updatedData))
+
+  const handleUpdate = () => {
+    mutate({ ...userData });
+  };
+
+  useEffect(() => {
+    return () => {
+      setUserData({..._authState})
+    }
+  }, [_authState])
+  
+
   return (
     <>
       <h4 className={styles.title}>{_authState?.user.full_name}</h4>

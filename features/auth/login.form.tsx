@@ -34,13 +34,13 @@ export default function LoginForm({ setLoginFormState }: ILoginFormProps) {
 
   const { methods, submitHandler, isLoading } = useReactForm<{ user_exist: boolean; user: any }, ILoginRequest>(
     'post',
-    `/auth/login`,
+    `/auth/check`,
     formSchema,
     undefined,
     {
       onSuccess: ({ user_exist, user }) => {
-        console.log({methods}, methods.getValues('email'), {user} )
-        setLoginFormState({ email: methods.getValues('email'), exists: user_exist, first_name: user.first_name });
+        console.log({ user })
+        setLoginFormState({ email: methods?.getValues('email'), exists: user_exist, first_name: user?.first_name });
       },
     }
   );
@@ -72,9 +72,9 @@ export default function LoginForm({ setLoginFormState }: ILoginFormProps) {
               placeholder={'Enter Email Address'}
             />
             <button type="submit" className={style.emailButton}>
-            {isLoading ? <div className={`${styles.spinner}`} ><svg className={`${styles.spin}`} viewBox="0 0 50 50">
-              <circle  className={`${styles.path}`} cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-                  </svg> Submitting </div> :  'Continue with Email'}
+              {isLoading ? <div className={`${styles.spinner}`} ><svg className={`${styles.spin}`} viewBox="0 0 50 50">
+                <circle className={`${styles.path}`} cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+              </svg> Submitting </div> : 'Continue with Email'}
             </button>
             <div className={style.orWrapper}>
               <p className={style.or}>OR</p>

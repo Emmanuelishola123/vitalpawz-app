@@ -51,20 +51,12 @@ export default function LoginPasswordForm({ email, first_name }: ILoginFormProps
       <FormProvider {...methods}>
         <form onSubmit={submitHandler}>
           <div className={style.wrapper}>
-            <RHookFormControl
-              hidden={true}
-              name={'email'}
-              type={'email'}
-              autoComplete={'email'}
-              inputClassName={style.email}
-              label={'Email Address'}
-              placeholder={'Enter Email Address'}
-            />
+           
             <RHookFormControl
               name={'password'}
               type={'password'}
               autoComplete={'password'}
-              inputClassName={style.password}
+              inputClassName={style.email}
               label={'Password'}
               placeholder={'Enter Password'}
             />

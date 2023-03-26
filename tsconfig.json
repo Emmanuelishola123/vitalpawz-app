@@ -42,6 +42,6 @@
     "pages/privacy-policy/index.js",
     "pages/add-pet/index.js",
     "pages/product-list/index.js"
-  ],
+, "services/accountApis.js"  ],
   "exclude": ["node_modules"]
 }
