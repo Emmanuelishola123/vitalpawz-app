@@ -39,7 +39,7 @@ export default function LoginPasswordForm({ email, first_name }: ILoginFormProps
     },
     {
       onSuccess: ({ data: { user, token } }) => {
-        console.log({user})
+        console.log({user, token})
         setAuth(token, user);
       },
     }

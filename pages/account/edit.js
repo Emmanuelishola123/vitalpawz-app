@@ -10,9 +10,12 @@ import { useMutation } from '@tanstack/react-query';
 import { updateAccount } from './../../services/accountApis';
 import { useState, useEffect } from 'react';
 import btnStyle from '../../styles/cart-checkout/checkout/style.module.scss';
+import useAuthService from '@/features/auth/hooks/useAuthService';
+
 
 const EditAccount = () => {
   const [_authState, setAuthState] = useAuthState();
+  const setAuth = useAuthService();
   const [userData, setUserData] = useState({});
   const [fullName, setFullName] = useState('');
   const [mobile, setMobile] = useState('');
@@ -24,7 +27,7 @@ const EditAccount = () => {
   const { mutate, isLoading, error } = useMutation(updateAccount, {
     onSuccess: (data) => {
       console.log(data.data.data);
-      setAuthState({ ..._authState, user: data?.data?.data });
+      setAuth(  _authState?.token,data?.data?.data );
     },
     onError: (error) => {
       console.log(error);
@@ -44,7 +47,7 @@ const EditAccount = () => {
         mobile: _authState?.user?.mobile,
         token: _authState?.token,
       });
-  }, [_authState, userData]);
+  }, [_authState]);
 
   useEffect(() => {
     setUserData((prev) => ({ ...prev, email: email }));
@@ -58,7 +61,6 @@ const EditAccount = () => {
     setUserData((prev) => ({ ...prev, full_name: fullName }));
   }, [fullName]);
 
-  
   return (
     <>
       <h4 className={styles.title}>{_authState?.user.full_name}</h4>
