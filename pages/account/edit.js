@@ -9,22 +9,27 @@ import useReactForm from './../../../vitalpawz-app old/app/hooks/useReactForm';
 import { useMutation } from '@tanstack/react-query';
 import { updateAccount } from './../../services/accountApis';
 import { useState, useEffect } from 'react';
-import styles from '../../styles/cart-checkout/checkout/style.module.scss';
-
+import btnStyle from '../../styles/cart-checkout/checkout/style.module.scss';
 
 const EditAccount = () => {
   const [_authState, setAuthState] = useAuthState();
   const [userData, setUserData] = useState({});
-  console.log({ _authState });
+  const [fullName, setFullName] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [email, setEmail] = useState('');
+
+  console.log({ _authState, userData });
 
   // Update account api
   const { mutate, isLoading, error } = useMutation(updateAccount, {
     onSuccess: (data) => {
-   console.log({data})
-    }
-    // onError: (error) => {
-    //   // Error actions
-    // },
+      console.log(data.data.data);
+      setAuthState({ ..._authState, user: data?.data?.data });
+    },
+    onError: (error) => {
+      console.log(error);
+      // Error actions
+    },
   });
 
   const handleUpdate = () => {
@@ -32,18 +37,28 @@ const EditAccount = () => {
   };
 
   useEffect(() => {
-    return () => {
+    return () =>
       setUserData({
         email: _authState?.user?.email,
         full_name: _authState?.user?.full_name,
         mobile: _authState?.user?.mobile,
         token: _authState?.token,
       });
-    };
-  }, [_authState]);
+  }, [_authState, userData]);
 
-  // console.log({userData})
+  useEffect(() => {
+    setUserData((prev) => ({ ...prev, email: email }));
+  }, [email]);
 
+  useEffect(() => {
+    setUserData((prev) => ({ ...prev, mobile: mobile }));
+  }, [mobile]);
+
+  useEffect(() => {
+    setUserData((prev) => ({ ...prev, full_name: fullName }));
+  }, [fullName]);
+
+  
   return (
     <>
       <h4 className={styles.title}>{_authState?.user.full_name}</h4>
@@ -54,13 +69,25 @@ const EditAccount = () => {
             inputType={'text'}
             inputPlaceholder=""
             inputValue={_authState?.user.full_name}
+            handleOnChange={setFullName}
           />
         </div>
         <div className="w-full lg:w-2/4 mb-[30px]">
-          <InputLabel label="Phone Number" inputType={'text'} inputPlaceholder="Enter number" />
+          <InputLabel
+            handleOnChange={setMobile}
+            label="Phone Number"
+            inputType={'text'}
+            inputPlaceholder="Enter number"
+          />
         </div>
         <div className="w-full">
-          <InputLabel label="Email" inputType={'email'} inputPlaceholder="" inputValue={_authState?.user.email} />
+          <InputLabel
+            handleOnChange={setEmail}
+            label="Email"
+            inputType={'email'}
+            inputPlaceholder=""
+            inputValue={_authState?.user.email}
+          />
 
           <span className="text-base mt-1 block">
             To ensure security we will send a verification link to new email address
@@ -69,11 +96,12 @@ const EditAccount = () => {
         <div className="w-full mt-[28px]">
           <PrimarySmall
             className="w-[168px] h-[44px] mr-10px mb-11px md:mb-0"
+            onClick={handleUpdate}
             text={
               isLoading ? (
-                <div className={`${styles.spinner}`}>
-                  <svg className={`${styles.spin}`} viewBox="0 0 50 50">
-                    <circle className={`${styles.path}`} cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                <div className={`${btnStyle.spinner}`}>
+                  <svg className={`${btnStyle.spin}`} viewBox="0 0 50 50">
+                    <circle className={`${btnStyle.path}`} cx="25" cy="25" r="18" fill="none" stroke-width="5"></circle>
                   </svg>{' '}
                   Updating{' '}
                 </div>
