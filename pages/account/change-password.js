@@ -7,6 +7,7 @@ import styles from 'styles/account/edit.module.scss';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthState } from '@/app/atom/auth.atom';
+import { updatePassword } from './../../services/accountApis';
 
 const EditAccount = () => {
   const [_authState, setAuthState] = useAuthState();

@@ -2,10 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from 'styles/cart-checkout/checkout/style.module.scss';
 import sheldImg from '@/public/img/logo/icon-40-shield.svg';
 import Image from 'next/image';
-import CartItemPreview from '@/components/CartItems/images/cartItemPreview.png';
 import MainLayout from 'layouts/MainLayout';
 import createGetServerSidePropsFn from 'shared/createGetServerSidePropsFn';
-import Link from 'next/link';
 import PrimarySmall from 'components/Buttons/PrimarySmall';
 import { useForm } from 'react-hook-form';
 import { useCartValue, getCartTotal, useCartState } from '../../../app/atom/cart.atom';
@@ -16,10 +14,9 @@ import { Label } from 'components/InputLabel';
 import MySelect from '@/components/CartItems/componentsCartItem/MySelect';
 import countryList from '../../../shared/countryList';
 import { toast } from 'react-toastify';
-import { postRequest, getRequest } from 'requests/api';
-import Router, { useRouter } from 'next/router';
+import { postRequest } from 'requests/api';
+import { useRouter } from 'next/router';
 import { applyCouponToProduct, placeOrder } from './../../../services/checkoutApis';
-import { Button } from '@chakra-ui/react';
 
 const paymentMethods = [
   { label: 'Stripe', value: 'card' },
@@ -213,104 +210,108 @@ const Checkout = () => {
         <span className={`${styles.urlText} ${styles.width100}`}>Back to cart</span>
         <div className={`${styles.width50} ${styles.md_w_100}`}>
           <div>
-            <div className={`${styles.flexRow} ${styles.mt_14} ${styles.flexWrap} ${styles.checkoutBox}`}>
-              <div className={`${styles.width100}`}>
-                <form className="" action="/" method="POST">
-                  <div className="">
-                    <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter}`}>
-                      <h4 className={`${styles.checkoutBoxHeader} ${styles.sm_w_100} ${styles.sm_m_0}`}>
-                        Your Details
-                      </h4>
-                      <span className={`${styles.urlText2} ${styles.sm_w_100} ${styles.sm_d_none}`}>
-                        Already have an account? <b>Log in</b>
-                      </span>
-                    </div>
+            {/* TODO: Login Form */}
+            {!_authState && (
+              <div className={`${styles.flexRow} ${styles.mt_14} ${styles.flexWrap} ${styles.checkoutBox}`}>
+                <div className={`${styles.width100}`}>
+                  <form className="" action="/" method="POST">
+                    <div className="">
+                      <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter}`}>
+                        <h4 className={`${styles.checkoutBoxHeader} ${styles.sm_w_100} ${styles.sm_m_0}`}>
+                          Your Details
+                        </h4>
+                        <span className={`${styles.urlText2} ${styles.sm_w_100} ${styles.sm_d_none}`}>
+                          Already have an account? <b>Log in</b>
+                        </span>
+                      </div>
 
-                    <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24}`}>
-                      <div className={`${styles.pr_12} ${styles.width60} ${styles.sm_w_100} ${styles.sm_p_0}`}>
-                        <label htmlFor="fullname" className={styles.formLabel}>
-                          Full Name
-                        </label>
-                        <div>
-                          <input
-                            id="text"
-                            name="fullname"
-                            type="text"
-                            autoComplete="fullname"
-                            placeholder="First & Last Name"
-                            required
-                            className={styles.formInput}
-                            onChange={(e) => setUserData({ ...userData, full_name: e.target.value })}
-                            // {...register('full_name', { required: 'Please Enter Your Full Name', minLength: 3 })}
-                          />
+                      <div className={`${styles.flexRow} ${styles.flexWrap} ${styles.alignCenter} ${styles.mt_24}`}>
+                        <div className={`${styles.pr_12} ${styles.width60} ${styles.sm_w_100} ${styles.sm_p_0}`}>
+                          <label htmlFor="fullname" className={styles.formLabel}>
+                            Full Name
+                          </label>
+                          <div>
+                            <input
+                              id="text"
+                              name="fullname"
+                              type="text"
+                              autoComplete="fullname"
+                              placeholder="First & Last Name"
+                              required
+                              className={styles.formInput}
+                              onChange={(e) => setUserData({ ...userData, full_name: e.target.value })}
+                              // {...register('full_name', { required: 'Please Enter Your Full Name', minLength: 3 })}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className={`${styles.width40} ${styles.sm_w_100} ${styles.sm_mt_24}`}>
-                        <label htmlFor="tel" className={styles.formLabel}>
-                          Contact Number
-                        </label>
-                        <div>
-                          <input
-                            id="contact"
-                            name="contact"
-                            type="tel"
-                            autoComplete="contact"
-                            placeholder="Contact"
-                            // value={username}
-                            // onChange={(e) => {
-                            //   setUsername(e.target.value);
-                            // }}
-                            required
-                            className={styles.formInput}
-                            onChange={(e) => setUserData({ ...userData, mobile: e.target.value })}
-                            // {...register('mobile', { required: 'Please Enter Your Contact!', minLength: 5 })}
+                        <div className={`${styles.width40} ${styles.sm_w_100} ${styles.sm_mt_24}`}>
+                          <label htmlFor="tel" className={styles.formLabel}>
+                            Contact Number
+                          </label>
+                          <div>
+                            <input
+                              id="contact"
+                              name="contact"
+                              type="tel"
+                              autoComplete="contact"
+                              placeholder="Contact"
+                              // value={username}
+                              // onChange={(e) => {
+                              //   setUsername(e.target.value);
+                              // }}
+                              required
+                              className={styles.formInput}
+                              onChange={(e) => setUserData({ ...userData, mobile: e.target.value })}
+                              // {...register('mobile', { required: 'Please Enter Your Contact!', minLength: 5 })}
 
-                            // formNoValidate={username === ''}
-                          />
+                              // formNoValidate={username === ''}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className={`${styles.width100} ${styles.mt_24}`}>
-                        <label htmlFor="email" className={styles.formLabel}>
-                          Email
-                        </label>
-                        <div>
-                          <input
-                            id="text"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            placeholder="Email"
-                            // {...register('email', {
-                            //   required: 'Please Enter Your Email!',
-                            //   pattern: {
-                            //     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            //     message: 'Please Enter A Valid Email!',
-                            //   },
-                            // })}
-                            required
-                            className={styles.formInput}
-                            onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                            // formNoValidate={username === ''}
-                          />
+                        <div className={`${styles.width100} ${styles.mt_24}`}>
+                          <label htmlFor="email" className={styles.formLabel}>
+                            Email
+                          </label>
+                          <div>
+                            <input
+                              id="text"
+                              name="email"
+                              type="email"
+                              autoComplete="email"
+                              placeholder="Email"
+                              // {...register('email', {
+                              //   required: 'Please Enter Your Email!',
+                              //   pattern: {
+                              //     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                              //     message: 'Please Enter A Valid Email!',
+                              //   },
+                              // })}
+                              required
+                              className={styles.formInput}
+                              onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                              // formNoValidate={username === ''}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className={`${styles.width100} ${styles.mt_24} ${styles.checkoutCheckbox}`}>
-                        <label
-                          // {...register('update_me')}
-                          className={`${styles.flexRow} ${styles.flexNoWrap} ${styles.alignCenter} ${styles.justifyStart} `}
-                        >
-                          <input type="checkbox" className={`${styles.checkbox} mr-3`} />
-                          <p className="text-sm text-medium_black">
-                            Keep me up to date on my orders and exclusive offers.
-                          </p>
-                        </label>
+                        <div className={`${styles.width100} ${styles.mt_24} ${styles.checkoutCheckbox}`}>
+                          <label
+                            // {...register('update_me')}
+                            className={`${styles.flexRow} ${styles.flexNoWrap} ${styles.alignCenter} ${styles.justifyStart} `}
+                          >
+                            <input type="checkbox" className={`${styles.checkbox} mr-3`} />
+                            <p className="text-sm text-medium_black">
+                              Keep me up to date on my orders and exclusive offers.
+                            </p>
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </form>
+                  </form>
+                </div>
               </div>
-            </div>
+            )}
 
+            {/* TODO: New Address */}
             <div className={`${styles.flexRow} ${styles.mt_14} ${styles.flexWrap} ${styles.checkoutBox}`}>
               <div className={`${styles.width100}`}>
                 {/* <form className="" action="/" method="POST"> */}
@@ -750,7 +751,7 @@ const Checkout = () => {
                             style={{ marginRight: '1rem' }}
                             disabled={isLoading ? true : false}
                           />
-                        {method.label}
+                          {method.label}
                         </label>
                       </div>
                     ))}
@@ -766,11 +767,24 @@ const Checkout = () => {
                           type="button"
                           onClick={handlePlaceOrder}
                           className={`${styles.ContinueButton} ${styles.md_mt_12} ${styles.sm_text_center}`}
-                        
-                      >
-                          {isLoading ? <div className={`${styles.spinner}`} ><svg className={`${styles.spin}`} viewBox="0 0 50 50">
-              <circle  className={`${styles.path}`} cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-                  </svg> Placing Order</div> : 'Pay & Continue'}
+                        >
+                          {isLoading ? (
+                            <div className={`${styles.spinner}`}>
+                              <svg className={`${styles.spin}`} viewBox="0 0 50 50">
+                                <circle
+                                  className={`${styles.path}`}
+                                  cx="25"
+                                  cy="25"
+                                  r="20"
+                                  fill="none"
+                                  stroke-width="5"
+                                ></circle>
+                              </svg>{' '}
+                              Placing Order
+                            </div>
+                          ) : (
+                            'Pay & Continue'
+                          )}
                         </button>
                         {/* <Button
                           width={'246px'}
