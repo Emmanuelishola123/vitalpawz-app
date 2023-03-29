@@ -40,6 +40,7 @@ const queryClient = new QueryClient()
 import { AppContext } from 'next/app';
 import { parse } from 'cookie';
 import { getRequestSwr } from '@/app/requests/api';
+import { AccountContextProvider } from '../context/accountContext';
 
 
 const EmptyLayout: ILayout = ({ children }) => children;
@@ -71,27 +72,29 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <StrictMode>
-      <RecoilRoot>
-        <FormContext>
-          <QueryClientProvider client={queryClient}>
-            {/* <ChakraProvider theme={theme}> */}
-            <AppWrapper
-              user={pageProps.user}
-              token={pageProps.token}
-              redirectedFrom={pageProps.redirectedFrom}
-              isServerRendered={pageProps.isServerRendered}
-              authCheckStatus={authCheckStatus}
-              setAuthCheckStatus={setAuthCheckStatus}
-            >
-              {loading && <LoadingState />}
-              <PageLayout>
-                <Component {...pageProps} />
-              </PageLayout>
-            </AppWrapper>
-            {/* </ChakraProvider> */}
-          </QueryClientProvider>
-        </FormContext>
-      </RecoilRoot>
+      <AccountContextProvider>
+        <RecoilRoot>
+          <FormContext>
+            <QueryClientProvider client={queryClient}>
+              {/* <ChakraProvider theme={theme}> */}
+              <AppWrapper
+                user={pageProps.user}
+                token={pageProps.token}
+                redirectedFrom={pageProps.redirectedFrom}
+                isServerRendered={pageProps.isServerRendered}
+                authCheckStatus={authCheckStatus}
+                setAuthCheckStatus={setAuthCheckStatus}
+              >
+                {loading && <LoadingState />}
+                <PageLayout>
+                  <Component {...pageProps} />
+                </PageLayout>
+              </AppWrapper>
+              {/* </ChakraProvider> */}
+            </QueryClientProvider>
+          </FormContext>
+        </RecoilRoot>
+      </AccountContextProvider>
     </StrictMode>
   );
 }

@@ -11,6 +11,7 @@ import { updateAccount } from './../../services/accountApis';
 import { useState, useEffect } from 'react';
 import btnStyle from '../../styles/cart-checkout/checkout/style.module.scss';
 import useAuthService from '@/features/auth/hooks/useAuthService';
+import { toast } from 'react-toastify';
 
 
 const EditAccount = () => {
@@ -28,10 +29,11 @@ const EditAccount = () => {
     onSuccess: (data) => {
       console.log(data.data.data);
       setAuth(  _authState?.token,data?.data?.data );
+      return toast.success('Profile updated successfully!');
     },
     onError: (error) => {
       console.log(error);
-      // Error actions
+      return toast.warning('Please enter your name');
     },
   });
 
